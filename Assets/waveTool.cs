@@ -16,13 +16,63 @@ public class waveTool : MonoBehaviour {
     public GameObject Trail;
     public float TimeScale = 1;
     Vector3 last;
+    public Vector3[] newVertices = new Vector3[15];
 
+    public Vector2[] newUV = new Vector2[4];
+    public Vector3[] newNormals = new Vector3[4];
+    public int[] newTriangles=new int[6];
+    Mesh BuildMeshI()
+    {
+        //= new Mesh();
+        for (int wl = 0; wl+1 <=2; wl++)
+        {
+
+            newVertices[0] = new Vector3(waveflow[0].PosX.Evaluate(0), waveflow[0].PosY.Evaluate(0),waveflow[wl].PosZ.Evaluate(0));
+            newVertices[1] = new Vector3(waveflow[0+1].PosX.Evaluate(0), waveflow[0+1].PosY.Evaluate(0), waveflow[wl + 1].PosZ.Evaluate(0));
+            newVertices[2] = new Vector3(waveflow[0].PosX.Evaluate(10/50f), waveflow[0].PosY.Evaluate(10/50), waveflow[wl].PosZ.Evaluate(10/50));
+
+        }
+
+        newUV[0] = new Vector2(0, 0);
+        newUV[1] = new Vector2(1, 0);
+        newUV[2] = new Vector2(0, 1);
+        newUV[3] = new Vector2(1, 1);
+        newTriangles[0] = 0;
+        newTriangles[1] = 2;
+        newTriangles[2] = 1;
+        newTriangles[3] = 3;
+        newTriangles[4] = 5;
+        newTriangles[5] = 4;
+        newTriangles[6] = 6;
+        newTriangles[7] = 8;
+        newTriangles[8] = 7;
+
+
+        print("");
+        newNormals[0] = -Vector3.forward;
+        newNormals[1] = -Vector3.forward;
+        newNormals[2] = -Vector3.forward;
+        newNormals[3] = -Vector3.forward;
+
+        Mesh mesh =GetComponent<MeshFilter>().mesh;
+        mesh.vertices = newVertices;
+        mesh.triangles = newTriangles;
+        mesh.normals = newNormals;
+        mesh.uv = newUV;
+        GetComponent<MeshFilter>().mesh = mesh;
+        return mesh;
+
+    }
+
+    
     Arch[] oldRails = null;
+    nodeFlow[] waveflow;
     void RefreshRails(bool newBlock)
     {
         //   last = cart.transform.position;
        // RefreshNodes();
         Arch[] rails = RefreshNodes();
+        waveflow = new nodeFlow[rails[0].Length];
         if (oldRails != null)
         {
             int iy = 0;
@@ -34,8 +84,7 @@ public class waveTool : MonoBehaviour {
             }
         }
         oldRails = rails;
-        Vector3 start = new Vector3(PosX.Evaluate(0), PosY.Evaluate(0), PosZ.Evaluate(0));
-        Gizmos.color = Color.red;
+
         //nested loop goes over each node once # of node is n Big O (1)
         for (int i=0;i< rails[0].Length;i+=1)//for segmant size
         {
@@ -97,46 +146,98 @@ public class waveTool : MonoBehaviour {
             if (rail.GetComponent<nodeFlow>() == null)
                 rail.AddComponent<nodeFlow>();
             nodeFlow ra=rail.GetComponent<nodeFlow>();
+           // print(rail.gameObject.name);
+            waveflow[i]= ra;
+            
+            //  print(masterRail.parent.parent.name);
+            rail.transform.parent = masterRail.parent.parent;
             ra.EndBehavior = masterRail.parent.gameObject.GetComponent<nodeFlow>().EndBehavior;
             ra.StartBehavior = masterRail.parent.gameObject.GetComponent<nodeFlow>().StartBehavior;
             
         }
+
         
+    }
+
+    public GameObject wave;
+    // Use this for initialization
+    void demo()
+    {
+        wave = transform.gameObject;
+        waveTool flow = wave.GetComponent<waveTool>();
+        waveTool.Arch[] rails = flow.RefreshNodes();
+
+        for (int wl = 0; wl + 1 < waveflow.Length; wl++)
+        {
+            // print(waveflow[0].PosX);//.Evaluate(0));
+            // print(waveflow.Length);
+            int index = wl * 3;
+            print(1 + index);
+            print(newVertices.Length);
+            newVertices[0 + index] = new Vector3(waveflow[wl].PosX.Evaluate(0), waveflow[wl].PosY.Evaluate(0), waveflow[wl].PosZ.Evaluate(0));
+            newVertices[1 + index] = new Vector3(waveflow[wl + 1].PosX.Evaluate(0), waveflow[wl + 1].PosY.Evaluate(0), waveflow[wl + 1].PosZ.Evaluate(0));
+            newVertices[2 + index] = new Vector3(waveflow[wl].PosX.Evaluate(1 / 50f), waveflow[wl].PosY.Evaluate(1 / 50f), waveflow[wl].PosZ.Evaluate(1 / 50f));
+
+
+
+        }
+        newTriangles[0] = 0;
+        newTriangles[1] = 2;
+        newTriangles[2] = 1;
+
+        newTriangles[3] = 3;
+        newTriangles[4] = 4;
+        newTriangles[5] = 5;
+
+        newTriangles[6] = 6;
+        newTriangles[7] = 7;
+        newTriangles[8] = 8;
+
+        newTriangles[9] = 2;
+        newTriangles[10] = 0;
+        newTriangles[11] = 7;
+        // newVertices[0] = new Vector3(0, 0, 0);
+        // newVertices[1] = new Vector3(100, 0, 0);
+        // newVertices[2] = new Vector3(0, 100, 0);
+        //  newVertices[3] = new Vector3(100, 100, 0);
+
+
+
+
+
+        newNormals[0] = -Vector3.forward;
+        newNormals[1] = -Vector3.forward;
+        newNormals[2] = -Vector3.forward;
+        newNormals[3] = -Vector3.forward;
+        newUV[0] = new Vector2(0, 0);
+        newUV[1] = new Vector2(1, 0);
+        newUV[2] = new Vector2(0, 1);
+        newUV[3] = new Vector2(1, 1);
 
     }
 
-    void OnDrawGizmos()
+
+
+    // Update is called once per frame
+
+    Mesh BuildMesh()
     {
-        Arch[] rails = RefreshNodes();
-        Vector3 start = new Vector3(PosX.Evaluate(0), PosY.Evaluate(0), PosZ.Evaluate(0));
-        Gizmos.color = Color.red;
-        foreach (Arch segmant in rails)
-        {
-           // print(segmant);
-           // print(segmant.PhysicalNode);
-            while (segmant.gotNode())
-            {
-                Gizmos.DrawSphere(segmant.getNode(), .3f);
-
-            }
-           // segmant.resetShape();
-            //Gizmos.DrawSphere(side.getNode(), .3f);
-            //Gizmos.DrawSphere(side.getNode(), .3f);
-        }
-
-        for (float lineSeg = 1 / 50f; lineSeg < transform.childCount * 20; lineSeg += 1 / 50f)
-        {
-            Gizmos.color = Color.blue;
-
-            Gizmos.DrawLine(start, new Vector3(PosX.Evaluate(lineSeg), PosY.Evaluate(lineSeg), PosZ.Evaluate(lineSeg)));
-            start = new Vector3(PosX.Evaluate(lineSeg), PosY.Evaluate(lineSeg), PosZ.Evaluate(lineSeg));
-
-        }
+        //= new Mesh();
+        MeshFilter meshf = GetComponent<MeshFilter>();
+        Mesh mesh = new Mesh();
+        meshf.mesh = mesh;
+        mesh.vertices = newVertices;
+        mesh.triangles = newTriangles;
+        mesh.normals = newNormals;
+        mesh.uv = newUV;
+        GetComponent<MeshFilter>().mesh = mesh;
+        return mesh;
 
     }
     void debugGraphs(){
         Arch[] rails = RefreshNodes();
-    Vector3 start = new Vector3(PosX.Evaluate(0), PosY.Evaluate(0), PosZ.Evaluate(0));
+       // BuildMesh();
+        Vector3 start = new Vector3(PosX.Evaluate(0), PosY.Evaluate(0), PosZ.Evaluate(0));
     Gizmos.color = Color.red;
         foreach (Arch segmant in rails)
         {
@@ -184,8 +285,12 @@ public class waveTool : MonoBehaviour {
         foreach (Transform child in transform)
         {
             // Arch i=new Arch(child.position + (child.right * 3), child.position - (child.right * 3));
-            Vector3[] shapei = { child.position + (child.right * 3),
-                    child.position + (child.right * 3)+(child.up * 7), child.position - (child.right * 3), child.position - (child.right * 3)+(child.up * 7)};
+            Vector3[] shapei = {
+                    child.position + (child.right * 3),
+                    child.position + (child.right * 3)+(child.up * 7),
+                    
+                    child.position - (child.right * 3)+(child.up * 7),
+                    child.position - (child.right * 3)};
 
            // data[index] = new Arch(child, child.position + (child.right * 3), child.position - (child.right * 3));
 
@@ -204,12 +309,17 @@ public class waveTool : MonoBehaviour {
     // Update is called once per frame
     private void Start()
     {
-        
+       
         RefreshRails(true);
+        // BuildMesh();
+        
         debugGraphs();
     }
     void Update()
     {
+
+
+        
 
         if (Time.frameCount % 20 == 0)
         {
@@ -217,10 +327,15 @@ public class waveTool : MonoBehaviour {
         }
         float currentT = 0;
         //  print(Time.time % currentT);
-        float time = Time.time * Mathf.Round(TimeScale * 100f) / 100f; 
-
-
+        float time = Time.time * Mathf.Round(TimeScale * 100f) / 100f;
+        if (setVer)
+        {
+            demo();
+        }
+        BuildMesh();
+        
     }
+    public bool setVer=true;
     public class Shape
     {
         public Node[] shape;

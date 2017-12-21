@@ -57,8 +57,8 @@ public class locomove : MonoBehaviour {
             Debug.DrawRay(hit.point, slideAngle, Color.yellow);
             // print(Vector3.AngleBetween(incomingVec, slideAngle));
             sy=((Vector3.Angle(incomingVec, slideAngle) / Mathf.PI));
-            print(sy);
-            print(ray.origin);
+           // print(sy);
+           // print(ray.origin);
             // Vector3.Cross(Vector3.Cross(reflectVec, hit.normal), hit.normal)
            
 
@@ -166,14 +166,6 @@ public class locomove : MonoBehaviour {
     [System.Serializable]
     public class NewJson
     {
-
-
-
         public float data;
-
-
     }
-
-
-
 }
