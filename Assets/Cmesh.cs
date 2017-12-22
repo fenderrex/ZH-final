@@ -19,26 +19,17 @@ public class Cmesh : MonoBehaviour {
         newVertices[3] = b2.refPoint;//        |/     |
                                      //b1 0    -------     b2 3
 
-
-
         //newVertices[4] = b1;       //b1     2     -------     b2   3
         //newVertices[5] = b2;       //             |    / |
         newVertices[4] = c1.refPoint;//             |  /   |
         newVertices[5] = c2.refPoint;//             |/     |
                                      //c1     4      -------     c2   5
 
-
-
-
-
        // newVertices[0] = c1;        // c1   4   -------     c2    5
       //  newVertices[1] = c2;         //         |    / |
         newVertices[6] = d1.refPoint;//           |  /   |
         newVertices[7] = d2.refPoint;//           |/     |
                                      // d1     6   -------    d2    7
-
-       
-
 
     //  newVertices[0] = d1;         //d1   6  -------  7   d2
     //  newVertices[1] = d2;         //        |    / |
@@ -141,51 +132,21 @@ public class Cmesh : MonoBehaviour {
     }
     void vectorError(string vector)
     {
-
         print("error " + vector + " is a single refrence vector not a edge");
     }
+
     Mesh pain(Mesh mesh,VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
     {
 
         int[] t1 = new int[3];
         int[] t2 = new int[3];
         int[] q1 = new int[6];
-        VectorReffrence[,] edges = new VectorReffrence[3,2];
-        
-        //b or d must be a reffrence
-        if (a.byRef && b.byRef)
-        {
-            t1[0] = mesh.triangles[a.refPoss];
-            t1[2] = mesh.triangles[b.refPoss];
-            edges[0, 0] = a;
-            edges[0, 1] = d;
-            edges[1, 0] = d;
-            edges[1, 1] = c;
-            edges[2, 0] = c;
-            edges[2, 1] = b;
-
-        }
-        else if (a.byRef && d.byRef)
-        {
-            t2[0] = mesh.triangles[a.refPoss];
-            t2[1] = mesh.triangles[d.refPoss];
-            edges[0, 0] = d;
-            edges[0, 1] = c;
-            edges[1, 0] = c;
-            edges[1, 1] = b;
-            edges[2, 0] = b;
-            edges[2, 1] = a;
-            
-
-        }else if (a.byRef==false)//we do not look up this vertex in the mesh with refpos
-        {
-            newVertices[0] = a.refPoint;
-            t1[0] = 0;
-        }
-        else
-        {
-            vectorError("A"); //error a is a single refrence vector not a edge //TODO: add debug
-        }
+        //b---c
+        //|   |
+        //a . d
+        //b---c
+        //.   |
+        //a---d
         //     edge 
         //b  1-------   2 c
         //    | t1 / |
@@ -193,75 +154,97 @@ public class Cmesh : MonoBehaviour {
         //    |/ t2  |
         //a 0 -------  3  d 
         //     edge
+        char[] edges = {'a', 'b',//1
+                        'b', 'c',//3
+                        'c', 'd',//5
+                        'd', 'a'};//7                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+
+        //b or d must be a reffrence
+        if (a.byRef && b.byRef)
+        {
+            edges[0] = '0';
+            edges[1] = '0';
+            t1[0] = mesh.triangles[a.refPoss];
+            t1[2] = mesh.triangles[b.refPoss];
+            t2[0] = mesh.triangles[a.refPoss];
+        }
         if (c.byRef && b.byRef)//a && b accounted for
         {
-
+            edges[2] = '0';
+            edges[3] = '0';
             t1[1] = mesh.triangles[c.refPoss];
             t1[2] = mesh.triangles[b.refPoss];
-
-            edges[0, 0] = b;
-            edges[0, 1] = a;
-            edges[1, 0] = a;
-            edges[1, 1] = d;
-            edges[2, 0] = d;
-            edges[2, 1] = c;
-
+            t2[2] = mesh.triangles[c.refPoss];
         }
-        else if (b.byRef==false)//we do not look up this vertex in the mesh with refpos
+        if (a.byRef && d.byRef)
         {
-            newVertices[1] = b.refPoint;
-            t1[2] = 1;
-            t2[0] = 0;
-        }
-        else if((b.byRef == true)&& (a.byRef == false))
-        {
-            vectorError("B"); //error b is a single refrence vector not a edge //TODO: add debug
+            edges[6] = '0';
+            edges[7] = '0';
+            t2[0] = mesh.triangles[a.refPoss];
+            t2[1] = mesh.triangles[d.refPoss];
+            t1[0] = mesh.triangles[a.refPoss];
         }
         if (c.byRef && d.byRef)
         {
-            //     edge 
-            //b  1-------   2 c
-            //    | t1 / |
-            //edge|  /   |  edge
-            //    |/ t2  |
-            //a 0 -------  3  d 
-            //     edge
-            // meh.refPoint== ves[tri[meh.refPoss]].refPoint;//this finds a Vector3 by a vertex postion in a mesh depicted by triangle//
-            //  meh.refPoint== ves[tri[c.byRef]].refPoint;//this finds a Vector3 by a vertex postion in a mesh depicted by triangle//
-            // public Vector3[] newVertices = new Vector3[10];
-            // public Vector2[] newUV = new Vector2[4];
-            // public Vector3[] newNormals = new Vector3[4];
-            // public int[] newTriangles = new int[6];
-
+            edges[4] = '0';
+            edges[5] = '0';
             t2[1] = mesh.triangles[d.refPoss];
             t2[2] = mesh.triangles[c.refPoss];
-            //.refPoint;
-            edges[0, 0] = c;
-            edges[0, 1] = b;
-            edges[1, 0] = b;
-            edges[1, 1] = a;
-            edges[2, 0] = a;
-            edges[2, 1] = d;
-
+            t1[1] = mesh.triangles[c.refPoss];
         } //c && b accounted for
-        else if(c.byRef==false)//t2 0,1,2
+
+
+
+
+        /*
+       
+        
+        
+        
+        //TODO: 
+        //add refPoint vertices then add then to t1 and t2
+        //
+        //
+        //
+        */
+        if (a.byRef == false)//we do not look up this vertex in the mesh with refpos
+        {
+            newVertices[0] = a.refPoint;
+        }
+        if (b.byRef==false)//we do not look up this vertex in the mesh with refpos
+        {
+            newVertices[1] = b.refPoint;
+        }
+        if (c.byRef == false)//t2 0,1,2
         {
             newVertices[2] = c.refPoint;
-            t1[1] = 1;
-            t2[2] = 2;
-
         }
-        else if ((c.byRef == true) && (b.byRef == false))
+        if (d.byRef == false)
+        {
+            newVertices[3] = d.refPoint;
+        }
+
+        //     edge 
+        //b  1-------   2 c
+        //    | t1 / |
+        //edge|  /   |  edge
+        //    |/ t2  |
+        //a 0 -------  3  d 
+        //     edge
+
+        if((a.byRef == true) && (b.byRef == false) && (d.byRef == false))
+        {
+            vectorError("A"); //error a is a single refrence vector not a edge //TODO: add debug
+        }
+        if((b.byRef == true) && (a.byRef == false) && (d.byRef == false))
+        {
+            vectorError("B"); //error b is a single refrence vector not a edge //TODO: add debug
+        }
+        if((c.byRef == true) && (b.byRef == false) && (d.byRef == false))
         {
             vectorError("C");  //error c is a single refrence vector not a edge //TODO: add debug
         }
-
-        if (d.byRef==false)
-        {
-            newVertices[3] = d.refPoint;
-            t2[2] = 3;
-        }
-        else if ((d.byRef == true) && (a.byRef == false) && (c.byRef == false))
+        if((d.byRef == true) && (a.byRef == false) && (c.byRef == false))
         {
             vectorError("D");//error d is a single refrence vector not a edge //TODO: add debug
         }
