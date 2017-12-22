@@ -207,20 +207,34 @@ public class Cmesh : MonoBehaviour {
         //
         //
         */
+        //     edge 
+        //b  1-------   2 c
+        //    | t1 / |
+        //edge|  /   |  edge
+        //    |/ t2  |
+        //a 0 -------  3  d 
+        //     edge
+
         if (a.byRef == false)//we do not look up this vertex in the mesh with refpos
         {
+            int Apos=mesh.vertices.Length;
             newVertices[0] = a.refPoint;
+            t1[0] = 0;
+            t2[0] = 0;
         }
         if (b.byRef==false)//we do not look up this vertex in the mesh with refpos
         {
+            int Bpos = mesh.vertices.Length;
             newVertices[1] = b.refPoint;
         }
         if (c.byRef == false)//t2 0,1,2
         {
+            int Cpos = mesh.vertices.Length;
             newVertices[2] = c.refPoint;
         }
         if (d.byRef == false)
         {
+            int Dpos = mesh.vertices.Length;
             newVertices[3] = d.refPoint;
         }
 
