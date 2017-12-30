@@ -21,7 +21,7 @@ public class nodeFlow : MonoBehaviour {
             cart = new GameObject();
             cart.name = "a cart";
             Trail = new GameObject();
-            Trail.name = "a cart";
+            Trail.name = "a cart trail";
         }
         last = cart.transform.position;
         RefreshNodes(transform);

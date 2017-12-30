@@ -25,17 +25,17 @@ public class Cmesh : MonoBehaviour {
         newVertices[5] = c2.refPoint;//             |/     |
                                      //c1     4      -------     c2   5
 
-       // newVertices[0] = c1;        // c1   4   -------     c2    5
-      //  newVertices[1] = c2;         //         |    / |
+        // newVertices[0] = c1;        // c1   4   -------     c2    5
+        //  newVertices[1] = c2;         //         |    / |
         newVertices[6] = d1.refPoint;//           |  /   |
         newVertices[7] = d2.refPoint;//           |/     |
                                      // d1     6   -------    d2    7
 
-    //  newVertices[0] = d1;         //d1   6  -------  7   d2
-    //  newVertices[1] = d2;         //        |    / |
-        newVertices[2] = a1.refPoint;//        |  /   |
-        newVertices[3] = a2.refPoint;//        |/     |
-                                     //a1   0   -------  1   a2
+        //  newVertices[0] = d1;         //d1   6  -------  7   d2
+        //  newVertices[1] = d2;         //        |    / |
+        newVertices[2] = a1.refPoint;    //        |  /   |
+        newVertices[3] = a2.refPoint;    //        |/     |
+                                         //a1   0   -------  1   a2
 
 
 
@@ -57,7 +57,14 @@ public class Cmesh : MonoBehaviour {
 
 
     }
-    Mesh analogTube(Mesh pre,int[] edges, VectorReffrence[] append)
+    /// <summary>
+    /// solves where the vertices attach to the mesh by proximity to edges
+    /// </summary>
+    /// <param name="pre">The mesh to build on</param>//make a MeshRefrence 
+    /// <param name="edges">The edges</param>
+    /// <param name="append">VectorReffrence to add</param>
+    /// <returns></returns>
+    Mesh analogMesh(Mesh pre, int[] edges, VectorReffrence[] append)
     {
         //      edge 
         //b  1-------   2 c
@@ -75,10 +82,10 @@ public class Cmesh : MonoBehaviour {
         //      edge
 
         //int[] tri = pre.triangles;
-        int size=pre.vertices.Length + append.Length;
+        int size = pre.vertices.Length + append.Length;
         VectorReffrence[] ves = new VectorReffrence[size];
         int ii = 0;
-        int[] tri = new int[pre.triangles.Length+((edges.Length/2)*6)];
+        int[] tri = new int[pre.triangles.Length + ((edges.Length / 2) * 6)];
         foreach (int vet in pre.triangles)
         {
 
@@ -120,12 +127,20 @@ public class Cmesh : MonoBehaviour {
             ii++;
         }
         */
-        pre=pain(pre, ves[0], ves[1], ves[2], ves[3]);//
+        QuadReffrence preQuad = pain(pre, ves[0], ves[1], ves[2], ves[3]);//
 
         return pre;
     }
-
-    Mesh pain(Mesh mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d)//ONLY FOR SINGLE PAIN! NOT FOR MESH USE WILL BUILD UN-OPPTOMISED MESH
+    /// <summary>
+    /// ONLY FOR SINGLE PAIN! NOT FOR MESH USE WILL BUILD UN-OPPTOMISED MESH good for starting meshes
+    /// </summary>
+    /// <param name="mesh"></param>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <param name="c"></param>
+    /// <param name="d"></param>
+    /// <returns></returns>
+    QuadReffrence pain(Mesh mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d)//ONLY FOR SINGLE PAIN! NOT FOR MESH USE WILL BUILD UN-OPPTOMISED MESH
     {
         return pain(mesh, new VectorReffrence(a), new VectorReffrence(b), new VectorReffrence(c), new VectorReffrence(d));// for quick start qauds/pains
 
@@ -135,12 +150,29 @@ public class Cmesh : MonoBehaviour {
         print("error " + vector + " is a single refrence vector not a edge");
     }
 
-    Mesh pain(Mesh mesh,VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
+    QuadReffrence pain(Mesh mesh, VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
     {
 
+
+
+        /*
+        //TODO: 
+        //  Normals
+        //  UVs
+        //
+        //  
+        //
+        //  make a object that can hold a mesh and VectorReffrence's of that mesh.
+        //   this object should have a function that can be called by VectorReffrence interface.
+        //    aswell as all edges.
+        //    
+        */
         int[] t1 = new int[3];
         int[] t2 = new int[3];
         int[] q1 = new int[6];
+        int[] tri = new int[mesh.triangles.Length + 6];
+        //int newVerts = 0;
+        //Vector3[] newQuad = new Vector3[4];
         //b---c
         //|   |
         //a . d
@@ -148,28 +180,47 @@ public class Cmesh : MonoBehaviour {
         //.   |
         //a---d
         //     edge 
+        //b  1-------   2 c b 1-------   2 c
+        //    | t1 / |         | t1 / |
+        //edge|  /   |         |  /   | 
+        //    |/ t2  |         |/ t2  |
+        //a 0 -------  3   d 0 -------  3  d 
+
         //b  1-------   2 c
         //    | t1 / |
         //edge|  /   |  edge
         //    |/ t2  |
         //a 0 -------  3  d 
         //     edge
+        //
+
+        // for debugging we will not use the pos calulation 
+        // but char in hopes to make it easyer
+
         char[] edges = {'a', 'b',//1
                         'b', 'c',//3
                         'c', 'd',//5
-                        'd', 'a'};//7                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-
+                        'd', 'a'};//7    
         //b or d must be a reffrence
+        //we do this edge detection so we know what not to repeat
+        a.ID = "a";
+        b.ID = "b";
+        c.ID = "c";
+        d.ID = "d";
         if (a.byRef && b.byRef)
         {
+            //  newVerts+=2;
             edges[0] = '0';
             edges[1] = '0';
+            //because every other vertex in a quad shares one vertex with two triangles we will allways set 3 vertices in triagles
             t1[0] = mesh.triangles[a.refPoss];
             t1[2] = mesh.triangles[b.refPoss];
             t2[0] = mesh.triangles[a.refPoss];
         }
+
         if (c.byRef && b.byRef)//a && b accounted for
         {
+            //   newVerts += 2;
             edges[2] = '0';
             edges[3] = '0';
             t1[1] = mesh.triangles[c.refPoss];
@@ -178,6 +229,7 @@ public class Cmesh : MonoBehaviour {
         }
         if (a.byRef && d.byRef)
         {
+            //   newVerts += 2;
             edges[6] = '0';
             edges[7] = '0';
             t2[0] = mesh.triangles[a.refPoss];
@@ -186,27 +238,17 @@ public class Cmesh : MonoBehaviour {
         }
         if (c.byRef && d.byRef)
         {
+            // newVerts += 2;
             edges[4] = '0';
             edges[5] = '0';
             t2[1] = mesh.triangles[d.refPoss];
             t2[2] = mesh.triangles[c.refPoss];
             t1[1] = mesh.triangles[c.refPoss];
-        } //c && b accounted for
+        }
 
 
+        //c && b accounted for
 
-
-        /*
-       
-        
-        
-        
-        //TODO: 
-        //add refPoint vertices then add then to t1 and t2
-        //
-        //
-        //
-        */
         //     edge 
         //b  1-------   2 c
         //    | t1 / |
@@ -214,55 +256,102 @@ public class Cmesh : MonoBehaviour {
         //    |/ t2  |
         //a 0 -------  3  d 
         //     edge
-
+        List<Vector3> newQuad = new List<Vector3>();
+        int pos = mesh.vertices.Length;
+      //  print("ver l: " + pos.ToString());
         if (a.byRef == false)//we do not look up this vertex in the mesh with refpos
         {
-            int Apos=mesh.vertices.Length;
-            newVertices[0] = a.refPoint;
-            t1[0] = 0;
-            t2[0] = 0;
+
+            newQuad.Add(a.refPoint);
+            a.refSpace = pos + newQuad.Count;
+            t1[0] = pos + newQuad.Count;//because we are adding a new vertec we ensure we predict its location in the mesh and store thats position in the triangles
+            t2[0] = pos + newQuad.Count;
         }
-        if (b.byRef==false)//we do not look up this vertex in the mesh with refpos
+        if (b.byRef == false)//we do not look up this vertex in the mesh with refpos
         {
-            int Bpos = mesh.vertices.Length;
-            newVertices[1] = b.refPoint;
+
+            newQuad.Add(b.refPoint); //newQuad[1] = b.refPoint;
+            b.refSpace = pos + newQuad.Count;
+            t1[2] = pos + newQuad.Count;
         }
-        if (c.byRef == false)//t2 0,1,2
+        if (c.byRef == false)
         {
-            int Cpos = mesh.vertices.Length;
-            newVertices[2] = c.refPoint;
+
+            newQuad.Add(c.refPoint);
+            c.refSpace = pos + newQuad.Count;
+            t1[1] = pos + newQuad.Count;
+            t2[2] = pos + newQuad.Count;
         }
         if (d.byRef == false)
         {
-            int Dpos = mesh.vertices.Length;
-            newVertices[3] = d.refPoint;
+
+            newQuad.Add(d.refPoint);
+            d.refSpace = pos + newQuad.Count;
+            t2[1] = pos + newQuad.Count;
         }
 
-        //     edge 
-        //b  1-------   2 c
-        //    | t1 / |
-        //edge|  /   |  edge
-        //    |/ t2  |
-        //a 0 -------  3  d 
-        //     edge
-
-        if((a.byRef == true) && (b.byRef == false) && (d.byRef == false))
+        if ((a.byRef == true) && (b.byRef == false) && (d.byRef == false))
         {
             vectorError("A"); //error a is a single refrence vector not a edge //TODO: add debug
         }
-        if((b.byRef == true) && (a.byRef == false) && (d.byRef == false))
+        if ((b.byRef == true) && (a.byRef == false) && (d.byRef == false))
         {
             vectorError("B"); //error b is a single refrence vector not a edge //TODO: add debug
         }
-        if((c.byRef == true) && (b.byRef == false) && (d.byRef == false))
+        if ((c.byRef == true) && (b.byRef == false) && (d.byRef == false))
         {
             vectorError("C");  //error c is a single refrence vector not a edge //TODO: add debug
         }
-        if((d.byRef == true) && (a.byRef == false) && (c.byRef == false))
+        if ((d.byRef == true) && (a.byRef == false) && (c.byRef == false))
         {
             vectorError("D");//error d is a single refrence vector not a edge //TODO: add debug
         }
 
+        Vector3[] vect = new Vector3[mesh.vertices.Length + newQuad.Count];
+        int placmentIndex = mesh.vertices.Length;
+
+        for (int i = 0; i < mesh.vertices.Length; i++)//add mesh
+        {
+            vect[i] = mesh.vertices[i];
+
+        }
+        placmentIndex = mesh.vertices.Length;
+        for (int i = 0; i < newQuad.Count; i++)//add quad 1-4
+        {
+            vect[i + (placmentIndex)] = newQuad[i];
+        }
+
+
+
+
+        placmentIndex = mesh.triangles.Length;
+        for (int i = 0; i < placmentIndex; i++)//copy triangles for new mesh
+        {
+            tri[i] = mesh.triangles[i];
+        }
+
+        for (int i = 0; i < 3; i++)//add t1
+        {
+            tri[i + (placmentIndex)] = t1[i] - 1;
+        }
+        placmentIndex += 3;
+        for (int i = 0; i < 3; i++)//add t2
+        {
+            tri[i + (placmentIndex)] = t2[i] - 1;
+        }
+
+        for (int i = 0; i < tri.Length; i++)//add quad 1-4
+        {
+           // print(tri[i]);
+
+        }
+
+        //Debug.Log("tri lenght: " + tri.Length.ToString() + "\nvect lenght: " + vect.Length.ToString());
+
+        mesh.vertices = vect;
+        mesh.triangles = tri;
+
+        QuadReffrence Q = new QuadReffrence(mesh, new VectorReffrence[] { a, b, c, d }, edges);
 
         //t1  012;   t2  023
         //     edge 
@@ -280,58 +369,108 @@ public class Cmesh : MonoBehaviour {
         //      newTriangles[4] = 2;
         //    newTriangles[5] = 3;
 
-        newNormals[0] = -Vector3.forward;
-        newNormals[1] = -Vector3.forward;
-        newNormals[2] = -Vector3.forward;
-        newNormals[3] = -Vector3.forward;
-
-
-        newUV[0] = new Vector2(0, 0);
-        newUV[1] = new Vector2(1, 0);
-        newUV[2] = new Vector2(0, 1);
-        newUV[3] = new Vector2(1, 1);
+        return Q;
 
 
 
-        return BuildMesh(mesh);
+        //return BuildMesh(mesh);
 
     }
 
     GameObject[] vert_h;// = new GameObject[8];
 
-    void Start () {
+    void Start() {
         //  waveTool flow=wave.AddComponent<waveTool>();
         //waveTool.Arch[] rails= flow.RefreshNodes();
         //triTube();
-        Vector3[] vert = { new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 0) };//, new Vector3(0, 0, 1), new Vector3(0, 1, 1), new Vector3(1, 1, 1), new Vector3(1, 0, 1) };
+        Vector3[] vert = { new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 0),
+                           new Vector3(2, 1, 0), new Vector3(2, 0, 0),
+                           new Vector3(3, 1, 0), new Vector3(3, 0, 0),
+                           new Vector3(1, 2, 0), new Vector3(2, 2, 3),
+                           new Vector3(-1, 0, 0), new Vector3(-1, 1, 0),
+                           new Vector3(0, -1, 0), new Vector3(-1, -1, 0)};//, new Vector3(0, 0, 1), new Vector3(0, 1, 1), new Vector3(1, 1, 1), new Vector3(1, 0, 1) };
+        //buildMesh(vert);
+    }
+    public void buildMesh(Vector3[] vert) { 
         vert_h = new GameObject[vert.Length];
         int ii = 0;
+        VectorReffrence[] ht=new VectorReffrence[vert.Length];
+         // { a, b, c, d, c1, d1, c2, d2, c3, d3, c4, d4, c5, d5 };
         foreach (GameObject h in vert_h)
         {
             GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             sphere.transform.parent = transform;
-            sphere.transform.localPosition = vert[ii];
+            sphere.transform.localPosition = vert[ii]; 
             sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
             sphere.name = ii.ToString();
             vert_h[ii] = sphere;
+            ht[ii]=new VectorReffrence(vert_h[ii]);
             ii++;
         }
+        print("newVertices processed");
         MeshFilter meshf = GetComponent<MeshFilter>();
-        Mesh mesh = new Mesh();
-        meshf.mesh = mesh;
-        meshf.mesh=pain(mesh,vert_h[0].transform.localPosition, vert_h[1].transform.localPosition, vert_h[2].transform.localPosition, vert_h[3].transform.localPosition);
-               // tube(vert_h[0].transform.position, vert_h[1].transform.position, vert_h[2].transform.position, vert_h[3].transform.position,
-            //   vert_h[4].transform.position, vert_h[5].transform.position, vert_h[6].transform.position, vert_h[7].transform.position);
+        MeshReffrence MM = new MeshReffrence(this, meshf.mesh, ht);
+        MM.buildQuadMesh(this, meshf.mesh, ht);
+
+           // QuadReffrence t= MM.MeshQuadReffrence.ToArray()[MM.MeshQuadReffrence.Count -2];//TODO: MeshReffrence proform a full search
+
+
+            // meshf.mesh = new Mesh();
+           // VectorReffrence[] i=t.getPairableVertex(new VectorReffrence[] { c3, d3 });
+
+           // h = new VectorReffrence[] {   i[1], i[0], c3, d3 };
+
+           // MM = new MeshReffrence(this, meshf.mesh, h);
+           // MM.buildQuadMesh(this, meshf.mesh, h);
+
+           // print(c3.ToString() +  "\n\n" + i[0].ToString()+ "\n\n" + d3.ToString() + "\n\n" + i[1].ToString());
+    
+        
+            /*
+            QuadReffrence e = pain(meshf.mesh, a, b, c, d);
+            VectorReffrence[] refVerts = e.getPairableVertex(new VectorReffrence[] { c1, d1 });
+            e = pain(meshf.mesh, refVerts[1], refVerts[0], c1, d1);
+
+            refVerts = e.getPairableVertex(new VectorReffrence[] { c2, d2 });
+            e = pain(meshf.mesh, refVerts[1], refVerts[0], c2, d2);
+            */
+        
+        //  meshf.mesh = mesh;
+        //   meshf.mesh=pain(mesh,vert_h[0].transform.localPosition, vert_h[1].transform.localPosition, vert_h[2].transform.localPosition, vert_h[3].transform.localPosition);
+        // tube(vert_h[0].transform.position, vert_h[1].transform.position, vert_h[2].transform.position, vert_h[3].transform.position,
+        //   vert_h[4].transform.position, vert_h[5].transform.position, vert_h[6].transform.position, vert_h[7].transform.position);
     }
-	
-	// Update is called once per frame
-	void Update () {
-        MeshFilter meshf = GetComponent<MeshFilter>();
 
-        meshf.mesh=pain(meshf.mesh, vert_h[0].transform.localPosition, vert_h[1].transform.localPosition, vert_h[2].transform.localPosition, vert_h[3].transform.localPosition);
+    // Update is called once per frame
+    void Update() {
+        // MeshFilter meshf = GetComponent<MeshFilter>();
+        //
+        //
+        //b---c---c1
+        //|   |    |
+        //a---d---d1
+        //
+        //a b c d
+        //>edges
+        //
+        /*
+        MeshFilter mesh_f = GetComponent<MeshFilter>();
+       // Mesh mesh = new Mesh();
+        //mesh_f.mesh = mesh;
 
-     //   tube(vert_h[0].transform.position, vert_h[1].transform.position, vert_h[2].transform.position, vert_h[3].transform.position,
-     //          vert_h[4].transform.position, vert_h[5].transform.position, vert_h[6].transform.position, vert_h[7].transform.position);
+        VectorReffrence a = new VectorReffrence(vert_h[0].transform.localPosition);
+        VectorReffrence b = new VectorReffrence(vert_h[1].transform.localPosition);
+        VectorReffrence c = new VectorReffrence(vert_h[2].transform.localPosition);
+        VectorReffrence d = new VectorReffrence(vert_h[3].transform.localPosition);
+        VectorReffrence c1 = new VectorReffrence(vert_h[2].transform.localPosition);
+        VectorReffrence d1 = new VectorReffrence(vert_h[3].transform.localPosition);
+        pain(mesh_f.mesh, a, b, c, d);
+        */
+        // vert_h[1].transform.localPosition
+        //meshf.mesh=pain(meshf.mesh, vert_h[0].transform.localPosition, vert_h[1].transform.localPosition, vert_h[2].transform.localPosition, vert_h[3].transform.localPosition);
+
+        //   tube(vert_h[0].transform.position, vert_h[1].transform.position, vert_h[2].transform.position, vert_h[3].transform.position,
+        //          vert_h[4].transform.position, vert_h[5].transform.position, vert_h[6].transform.position, vert_h[7].transform.position);
     }
     void triTube()
     {
@@ -369,40 +508,376 @@ public class Cmesh : MonoBehaviour {
     }
     Mesh BuildMesh(Mesh mesh)
     {
-       // MeshFilter meshf = GetComponent<MeshFilter>();
-       // Mesh mesh = new Mesh();
-       // meshf.mesh = mesh;
+        // MeshFilter meshf = GetComponent<MeshFilter>();
+        // Mesh mesh = new Mesh();
+        // meshf.mesh = mesh;
         mesh.vertices = newVertices;
 
         mesh.triangles = newTriangles;
 
         mesh.normals = newNormals;
         mesh.uv = newUV;
+
         GetComponent<MeshFilter>().mesh = mesh;
         return mesh;
 
     }
+
+    //  make a object that can hold a mesh and its VectorReffrence's of that mesh aswell as edges.
+    //   this object should have a function that can be called by VectorObject interface.
+    //    
+    //    
+    /// <summary>
+    /// holds edges
+    /// </summary>
+    class QuadReffrence //TODO: :MeshReffrence
+    {
+        VectorReffrence[] meshVectorRef = new VectorReffrence[4 * 6];
+        VectorReffrence[] _edges = new VectorReffrence[4 * 2];
+        Mesh mesh = new Mesh();
+        Cmesh _this;
+
+        public QuadReffrence(Mesh mesh, VectorReffrence[] meshVectorRef, char[] edges)
+        {
+            this.mesh = mesh;
+            this.meshVectorRef[0] = meshVectorRef[0];
+            this.meshVectorRef[1] = meshVectorRef[1];
+
+            this.meshVectorRef[2] = meshVectorRef[1];
+            this.meshVectorRef[3] = meshVectorRef[2];
+
+            this.meshVectorRef[4] = meshVectorRef[2];
+            this.meshVectorRef[5] = meshVectorRef[3];
+
+            this.meshVectorRef[6] = meshVectorRef[3];
+            this.meshVectorRef[7] = meshVectorRef[0];
+            meshVectorRef = this.meshVectorRef;
+
+            for (int i = 0; i < 7; i += 2)
+            {
+                if ((edges[i] != '0' && edges[i + 1] != '0'))
+                {
+                    //  print(i + 1);
+                    if (meshVectorRef[i].hasRef && meshVectorRef[i + 1].hasRef)
+                    {
+                        this._edges[i] = meshVectorRef[i];
+                        this._edges[i + 1] = meshVectorRef[i + 1];
+                    }
+                    else
+                    {
+                        Debug.LogError("VectorReffrence does not hold a refrance\ncall the construscter with a refrance or assin one");
+                    }
+
+                }
+            }
+        }
+        /// <summary>
+        /// returns a array of VectorReffrence paird with que 
+        /// </summary>
+        /// <param name="que">VectorReffrence list to find closest edge</param>
+        /// <returns></returns>
+        public VectorReffrence[] getPairableVertex(VectorReffrence[] que)
+        {
+            List<Vector3> Aout = new List<Vector3>();
+            foreach (VectorReffrence vr in que)
+            {
+                Aout.Add(vr.refPoint);
+            }
+            return getPairableVertex(Aout.ToArray());
+
+        }
+        /// <summary>
+        /// returns a array of VectorReffrence paird with que 
+        /// </summary>
+        /// <param name="que">Vector3 list to find closest edge</param>
+        public VectorReffrence[] getPairableVertex(Vector3[] que)//we accept a list so we only go through the edge list once
+        {
+            float[] distace = new float[que.Length];
+            VectorReffrence[] refP = new VectorReffrence[que.Length];
+            for (int i = 0; i < que.Length; i++)
+            {
+                distace[i] = Mathf.Infinity;
+            }
+            for (int i = 0; i < _edges.Length; i += 2)
+            {
+                //double distace=Mathf.Infinity;
+                for (int r = 0; r < que.Length; r += 1)
+                {
+                    float d = Vector3.Distance(_edges[i].refPoint, que[r]);
+                    if (d < distace[r])
+                    {
+                        distace[r] = d;
+                        refP[r] = _edges[i];
+                    }
+                }
+            }
+
+
+            return refP;
+
+
+        }
+        public VectorReffrence[] edges
+        {
+            get
+            {
+                return _edges;
+            }
+        }
+
+        /*
+        public QuadReffrence(Cmesh _this, Mesh mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        {
+
+            _this.pain(mesh, new VectorReffrence(a), new VectorReffrence(b), new VectorReffrence(c), new VectorReffrence(d));
+
+            //  Cmesh e = GetComponent<Cmesh>();
+            this._this = _this;
+            //_this.pain(mesh, a, b, c, d);
+        }
+        public QuadReffrence(Cmesh _this, Mesh mesh, VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
+        {
+
+            _this.pain(mesh, a, b, c, d);
+
+            //  Cmesh e = GetComponent<Cmesh>();
+            this._this = _this;
+            //_this.pain(mesh, a, b, c, d);
+        }
+        
+        /// <summary>
+        /// uses the triagles indexes of supplyed mesh to define a quad
+        /// this is usefull if you want to join meshes 
+        /// </summary>
+        /// <param name="_this">a refrence to Cmesh for the functions</param>
+        /// <param name="mesh">the data mesh</param>
+        /// <param name="a">index in triagnles of vertex a</param>
+        /// <param name="b">index in triagnles b</param>
+        /// <param name="c">index in triagnles c</param>
+        /// <param name="d">index in triagnles d</param>
+        public QuadReffrence(Cmesh _this, Mesh mesh, int a, int b, int c, int d)
+        {
+
+            //
+
+            //  Cmesh e = GetComponent<Cmesh>();
+            this._this = _this;
+            _this.pain(mesh, new VectorReffrence(a), new VectorReffrence(b), new VectorReffrence(c), new VectorReffrence(d));
+            
+           
+        }
+        */
+
+
+    }
+
+    class MeshReffrence
+    {
+
+        Mesh mesh = null;
+        VectorReffrence[] meshVectorRef = null;
+        List<QuadReffrence> _MeshQuadReffrence = new List<QuadReffrence>();
+        Cmesh _this;
+        int[] edges = null;
+        public MeshReffrence(Cmesh _this, Mesh mesh, int[] edges, VectorReffrence[] meshVectorRef)
+        {
+            this._this = _this;
+            this.mesh = mesh;
+            this.edges = edges;
+            this.meshVectorRef = meshVectorRef;
+        }
+        public MeshReffrence(Cmesh _this,Mesh mesh, VectorReffrence[] meshVectorRef)
+        {
+            this.mesh = mesh;
+            this.meshVectorRef = meshVectorRef;
+        }
+
+        VectorReffrence[] getPairableVertex(VectorReffrence[] que)//TODO: use direction for opposition
+        {
+            float[] distace = new float[que.Length];
+            VectorReffrence[] refP = new VectorReffrence[que.Length];
+            VectorReffrence[] edges = findEdges();
+            for (int i = 0; i < que.Length; i++)
+            {
+                distace[i] = Mathf.Infinity;
+            }
+            for (int i = 0; i < edges.Length; i += 2)
+            {
+                //double distace=Mathf.Infinity;
+                for (int r = 0; r < que.Length; r += 1)
+                {
+                    float d = Vector3.Distance(edges[i].refPoint, que[r].refPoint);
+                    if (d < distace[r])
+                    {
+                        distace[r] = d;
+                        refP[r] = edges[i];
+                    }
+                }
+            }
+            return refP;
+        }
+        public List<QuadReffrence> MeshQuadReffrence
+        {
+            get { return _MeshQuadReffrence; }
+        }
+
+        public void buildQuadMesh(Cmesh _this, Mesh mesh, VectorReffrence[] points) {
+            QuadReffrence e;
+            VectorReffrence[] refVerts;
+            print("ready: "+ points.Length.ToString());
+            if (points.Length >= 4)
+            {
+                
+                e = _this.pain(mesh, points[0], points[1], points[2], points[3]);
+                print("has 4!");
+                _MeshQuadReffrence.Add(e);
+                
+                if (points.Length >= 6){
+                    for(int i=4;i< points.Length; i+=2)
+                    {
+
+                    
+                            refVerts = getPairableVertex(new VectorReffrence[] { points[i], points[i+1] });
+                            
+                            e = _this.pain(mesh, refVerts[1], refVerts[0], points[i], points[i + 1]);
+                            _MeshQuadReffrence.Add(e);
+                    }
+                }
+            }
+
+/*            VectorReffrence[] refVerts = e.getPairableVertex(new VectorReffrence[] { c1, d1 });
+            e= _this.pain(meshf.mesh, refVerts[1], refVerts[0], c1, d1);
+
+            refVerts = e.getPairableVertex(new VectorReffrence[] { c2, d2 });
+            e = pain(meshf.mesh, refVerts[1], refVerts[0], c2, d2);
+            */
+        }
+        public VectorReffrence[] findEdges()
+        {
+            List<VectorReffrence> edgeQue=new List<VectorReffrence>();
+            foreach (QuadReffrence quadReffrence in _MeshQuadReffrence)
+            {
+                foreach (VectorReffrence vert in quadReffrence.edges)
+                {
+                    if (vert.partEdge)
+                    {
+                        edgeQue.Add(vert);
+                    }
+                }
+
+            }
+            return edgeQue.ToArray();
+        }
+
+
+
+
+    }
+
+
+    /// <summary>
+    /// VectorReffrence is used to hold a vector or the location of a vector in a mesh.
+    /// byReff is true if we don't have a vertex
+    /// hasReff is true if we have a index and vertex
+    /// </summary>
     class VectorReffrence //VectorReffrence is used to hold a vector or the location of a vector in a mesh. TODO: should it also hold a mesh?
     {
-        Vector3 _refPoint;
-        int _refPoss;
-        bool _byRef = false;
-        GameObject _refObject = null;
+        public string ID = null;
 
+
+        Vector3 _refPoint;
+        int _refPoss=-1;//position in triangles
+        int _refSpace=-1;//position in vertices
+        bool _byRef = false;
+        bool _hasRef = false;
+        bool _partEdge = true;
+        
+        GameObject _refObject = null;
+        public override string ToString()
+        {
+            return base.ToString()+ "\nrefPoss: " + _refPoint.ToString() + "\nrefPoss: " + _refPoss.ToString() + "\nrefSpace: " + _refSpace.ToString() + "\nbyRef: " + _byRef.ToString() + "\nhasRef: " + _hasRef.ToString()+ "\npartEdge: " + _partEdge.ToString();
+        }
 
         // sphere.transform.parent = transform;
         //sphere.transform.localPosition = vert[ii];
         //    sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
-        public VectorReffrence(Vector3 refPoint, int refPoss)
+        /// <summary>
+        /// a refrance in 3D space or a pointer in a mesh
+        /// 
+        /// </summary>
+        /// <param name="shape">a mesh that holds the subjected vector</param>
+        /// <param name="refPoss">position in triangles</param>
+        public VectorReffrence(Mesh shape, int refPoss)
+        {
+            int refSpace = shape.triangles[refPoss];
+            this._refPoint = shape.vertices[refSpace];
+            this._refPoss = refPoss;
+            this._refSpace = refSpace;
+            _hasRef = true;
+        }
+
+        /// <summary>
+        /// a refrance in 3D space or a pointer in a mesh
+        /// 
+        /// </summary>
+        /// <param name="refPoint">position in 3d Space</param>
+        /// <param name="refPoss">position in triangles</param>
+        /// <param name="refSpace">position in mesh</param>
+        public VectorReffrence(Vector3 refPoint, int refPoss, int refSpace)
         {
             this._refPoint = refPoint;
             this._refPoss = refPoss;
+            this._refSpace = refSpace;
+            _hasRef = true;//not by reffrance
         }
-        public VectorReffrence(int refPoss)
+        public VectorReffrence(GameObject gg, int refPoss, int refSpace)
+        {
+            this.refObject = gg;
+            this._refPoint = gg.transform.position;
+            this._refPoss = refPoss;
+            this._refSpace = refSpace;
+            _hasRef = true;//not by reffrance
+        }
+        public VectorReffrence(GameObject gg)
+        {
+            this.refObject = gg;
+            this._refPoint = gg.transform.position;
+
+        }
+
+        /// <summary>
+        /// a refrance in 3D space or a pointer in a mesh
+        /// 
+        /// </summary>
+        /// <param name="refPoss">position in triangles</param>
+        /// <param name="refSpace">position in mesh</param>
+        public VectorReffrence(int refPoss, int refSpace)
         {
             this._refPoss = refPoss;
-            byRef = true;
+            this._refSpace = refSpace;
+            _byRef = true;
+            _hasRef = true;
         }
+
+        /// <summary>
+        /// a refrance in 3D space or a pointer in a mesh
+        /// 
+        /// </summary>
+ 
+        /// <param name="refSpace">position in mesh</param>
+        public VectorReffrence(int refSpace)
+        {
+          //  this._refPoss = refPoss;
+            this._refSpace = refSpace;
+            _byRef = true;
+            _hasRef = true;
+        }
+
+        /// <summary>
+        /// a refrance in 3D space
+        /// 
+        /// </summary>
+        /// <param name="refPoint">position in 3d Space</param>
         public VectorReffrence(Vector3 refPoint)
         {
             this._refPoint = refPoint;
@@ -412,7 +887,18 @@ public class Cmesh : MonoBehaviour {
         {
             get
             {
-                _refPoint = _refObject.transform.localPosition;
+                if (_refObject == null)
+                {
+                    throw new System.ArgumentException("refObject not set!");
+                  //  Debug.LogError("refObject not set! using refPoint!", _refObject);
+                }
+                else
+                {
+                    _refPoint = _refObject.transform.localPosition;
+                }
+                //throw new System.ArgumentException("Parameter cannot be null", "original");
+
+                
                 return _refObject;
             }
             set
@@ -421,7 +907,24 @@ public class Cmesh : MonoBehaviour {
                 _refPoint = value.transform.localPosition;
             }
         }
-        public int refPoss//possition in mesh
+        public bool partEdge
+        {
+            get
+            {
+         
+
+                return _partEdge;
+            }
+            set
+            {
+                _partEdge = value;
+               
+            }
+        }
+        /// <summary>
+        /// postion in triangles
+        /// </summary>
+        public int refPoss
         {
             get { return _refPoss; }
             set
@@ -431,18 +934,54 @@ public class Cmesh : MonoBehaviour {
                     //TODO: throw error
                     byRef = false;
                     _refPoss = value;
+                    _hasRef = false;
                 }
                 else
                 {
+                    _hasRef = true;
                     _refPoss = value;
                 }
             }
         }
-        public Vector3 refPoint//point in 3d space
+        /// <summary>
+        /// postion in mesh
+        /// </summary>
+        public int refSpace
+        {
+            get { return _refSpace; }
+            set
+            {
+                if (value == -1)
+                {
+                    //TODO: throw error
+                    byRef = false;
+                    _refSpace = value;
+                    _hasRef = false;
+                }
+                else
+                {
+                    _hasRef = true;
+                    _refSpace = value;
+                }
+            }
+        }
+        /// <summary>
+        /// point in 3d space
+        /// </summary>
+        public Vector3 refPoint
         {
             get
             {
-                _refPoint = _refObject.transform.localPosition;
+                if (_refObject == null)
+                {
+                    //throw new System.ArgumentException("refObject not set!");
+                    Debug.LogWarning("refObject not set! Using refPoint!", _refObject);
+                }
+                else
+                {
+                    _refPoint = _refObject.transform.localPosition;
+                }
+             
                 return _refPoint;
             }
             set
@@ -455,6 +994,11 @@ public class Cmesh : MonoBehaviour {
         {
             get { return _byRef; }
             set { _byRef = value; }
+        }
+        public bool hasRef
+        {
+            get { return _hasRef; }
+            set { _hasRef = value; }
         }
 
 

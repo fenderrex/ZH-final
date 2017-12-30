@@ -31,6 +31,7 @@ public class locomove : MonoBehaviour {
     RaycastHit hit;
     float sy = 0;
     Ray ray = new Ray(new Vector3(0,0,0), new Vector3(0, -1, 0));
+    public bool onDrugs = false;
     void Update()
     {
        // moveDirection = Vector3.zero;
@@ -64,7 +65,16 @@ public class locomove : MonoBehaviour {
 
         }
         CharacterController controller = GetComponent<CharacterController>();
-
+        if (onDrugs)
+        {
+            if (Input.GetButton("Jump"))//jump
+            {
+                // print("jump");
+                moveDirection.y = jumpSpeed;
+                stableFooting = false;
+            }
+            //moveDirection.y = gravity * Time.deltaTime;
+        }
         if (controller.isGrounded||IsGrounded(transform))
         {
             moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
@@ -73,9 +83,19 @@ public class locomove : MonoBehaviour {
 
             moveDirection *= speed;
             Vector3 slide = new Vector3((Mathf.Abs(slideAngle.x) * 180) / Mathf.PI, (Mathf.Abs(slideAngle.y) * 180) / Mathf.PI, (Mathf.Abs(slideAngle.z) * 180) / Mathf.PI);//rad to deg? seems to work
-           // print(slide);
-      
-            if(sy+5> controller.slopeLimit)//fall
+                                                                                                                                                                            // print(slide);
+            
+            if (onDrugs)
+            {
+                if (Input.GetButton("Jump") && stableFooting)//jump
+                {
+                    // print("jump");
+                    moveDirection.y = jumpSpeed;
+                    stableFooting = false;
+                }
+                //moveDirection.y = gravity * Time.deltaTime;
+            }
+            else if(sy+5> controller.slopeLimit)//fall
             {
                 
                 moveDirection = moveDirection - (slideAngle * (gravity / 7)) + (reflectVec*1);//slide down with a bit of pep
@@ -107,7 +127,14 @@ public class locomove : MonoBehaviour {
             //StartCoroutine(Upload());
             // StartCoroutine(setVal(0));//(int)((long)current/(long)lengh)));
         }
-        moveDirection.y -= gravity * Time.deltaTime;
+        if (onDrugs==false)
+        {
+            moveDirection.y -= (gravity * Time.deltaTime);
+        }
+        else
+        {
+            moveDirection.y -= ((gravity/6) * Time.deltaTime);
+        }
         controller.Move(moveDirection * Time.deltaTime);
 
     }

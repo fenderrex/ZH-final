@@ -167,7 +167,7 @@ public class waveTool : MonoBehaviour {
         waveTool flow = wave.GetComponent<waveTool>();
         waveTool.Arch[] rails = flow.RefreshNodes();
 
-        for (int wl = 0; wl + 1 < waveflow.Length; wl++)
+        for (int wl = 0; wl < waveflow.Length; wl++)
         {
             // print(waveflow[0].PosX);//.Evaluate(0));
             // print(waveflow.Length);
@@ -215,6 +215,45 @@ public class waveTool : MonoBehaviour {
         newUV[3] = new Vector2(1, 1);
 
     }
+
+
+
+    void build()
+    {
+        print("Refreshed nodes");
+        wave = transform.gameObject;
+        waveTool flow = wave.GetComponent<waveTool>();
+        waveTool.Arch[] rails = flow.RefreshNodes();
+        print("Refreshed nodes");
+        Vector3[] newVertices = new Vector3[50];
+        for (int i = 0; i < waveflow.Length; i+=2)
+        {
+            print("sorting rails");
+            for (int y = 0; y < waveflow[i].PosX.length; y += 1)
+            {
+       
+                    print("building newVertices");
+                    float y_alt =  y*.1f;
+                    newVertices[(i) + (y * i)] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
+
+                    newVertices[(i + 1) + (y * i)] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt), waveflow[i + 1].PosY.Evaluate(y_alt), waveflow[i + 1].PosZ.Evaluate(y_alt));
+                
+            }
+        }
+        print("newVertices compleated");
+        print(newVertices.Length);
+        Vector3[] me = new Vector3[30];
+        for(int i=0; i < me.Length; i++)
+        {
+            me[i]= newVertices[i];
+            print(me[i]);
+        }
+        Cmesh cm=GetComponent<Cmesh>();
+        cm.buildMesh(me);
+
+
+    }
+
 
 
 
@@ -312,8 +351,8 @@ public class waveTool : MonoBehaviour {
        
         RefreshRails(true);
         // BuildMesh();
-        
-        debugGraphs();
+       // build();
+        //debugGraphs();
     }
     void Update()
     {
@@ -321,25 +360,32 @@ public class waveTool : MonoBehaviour {
 
         
 
-        if (Time.frameCount % 20 == 0)
+        if (Time.frameCount % 240 == 0)
         {
-          //  RefreshRails(false);
+            Debug.Log("lets fuckup!");
+            build();//  RefreshRails(false);
         }
         float currentT = 0;
         //  print(Time.time % currentT);
         float time = Time.time * Mathf.Round(TimeScale * 100f) / 100f;
-        if (setVer)
-        {
-            demo();
-        }
-        BuildMesh();
+
+        //BuildMesh();
         
     }
     public bool setVer=true;
+
+    /// <summary>
+    /// holds nodes in a shape
+    /// </summary>
     public class Shape
     {
         public Node[] shape;
         public Node main;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="ii"></param>
         Shape(Node i, Node[] ii)
         {
             main = i;
@@ -347,6 +393,9 @@ public class waveTool : MonoBehaviour {
         }
 
     }
+    /// <summary>
+    /// Holds a wave segment
+    /// </summary>
     public class Arch//this holds a rail segment
     {
 
@@ -412,6 +461,11 @@ public class waveTool : MonoBehaviour {
             this.shape =new Vector3[]{ left,right};
           //  e = 1;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inspiration"></param>
+        /// <param name="shape"></param>
         public Arch(Transform inspiration,Vector3[] shape)//should we copy the array??
         {
             this._inspiration = inspiration;
