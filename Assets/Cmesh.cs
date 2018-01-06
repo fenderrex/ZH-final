@@ -412,29 +412,24 @@ public class Cmesh : MonoBehaviour {
         }
         return indices;//indices of sorted elements
     }
-
-    public void buildMesh(Vector3[] vert)
+    /// <summary>
+    /// this is the slower(+n) magical entrance function where all the crazy auto mesh deduction starts
+    /// </summary>
+    /// <param name="verts">this list of Vector3 is converted into VectorReffrence this can be timely so conciter the VectorReffrence overide</param>
+    public void buildMesh(Vector3[] verts)
     {
-        vert_h = new GameObject[vert.Length];
-        int ii = 0;
-        VectorReffrence[] ht = new VectorReffrence[vert.Length];
+   
+        VectorReffrence[] ht = new VectorReffrence[verts.Length];
         // { a, b, c, d, c1, d1, c2, d2, c3, d3, c4, d4, c5, d5 };
-        foreach (GameObject h in vert_h)
+        int i = 0;
+        foreach (Vector3 h in verts)
         {
-
-            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.transform.parent = transform.parent;
-            sphere.transform.localPosition = vert[ii];
-            sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
-            sphere.name = ii.ToString();
-            vert_h[ii] = sphere;
-            ht[ii] = new VectorReffrence(vert_h[ii]);
-            ii++;
+            ht[i] = new VectorReffrence(h);
+            i++;
         }
         //   print("newVertices processed");
-        MeshFilter meshf = GetComponent<MeshFilter>();
-        MeshReffrence MM = new MeshReffrence(this, meshf.mesh, ht);
-        MM.buildQuadMesh(this, meshf.mesh, ht);
+
+        buildMesh(ht);
 
     }
     /// <summary>
@@ -458,7 +453,7 @@ public class Cmesh : MonoBehaviour {
         }
         foreach (VectorReffrence h in verts)
         {
-            if (h.refObject == null) {
+            if (h.isRefObjectNull) {
                 GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 sphere.transform.parent = meshPoints.transform;
                 sphere.transform.localPosition = verts[ii].refPoint;
@@ -569,7 +564,7 @@ public class Cmesh : MonoBehaviour {
     {
         VectorReffrence[] meshVectorRef = new VectorReffrence[4 * 6];
         VectorReffrence[] _edges = new VectorReffrence[4 * 2];
-        Mesh mesh = new Mesh();
+        Mesh _mesh = new Mesh();
         Cmesh _this;
         public QuadReffrence()
         {
@@ -577,7 +572,7 @@ public class Cmesh : MonoBehaviour {
         }
         public QuadReffrence(Mesh mesh, VectorReffrence[] meshVectorRef, char[] edges)
         {
-            this.mesh = mesh;
+            this._mesh = mesh;
             this.meshVectorRef[0] = meshVectorRef[0];
             this.meshVectorRef[1] = meshVectorRef[1];
 
@@ -691,6 +686,13 @@ public class Cmesh : MonoBehaviour {
                 return _edges;
             }
         }
+        public Mesh mesh
+        {
+            get
+            {
+                return _mesh;
+            }
+        }
 
         /*
         public QuadReffrence(Cmesh _this, Mesh mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
@@ -789,9 +791,14 @@ public class Cmesh : MonoBehaviour {
 
                     
                             refVerts = getPairableVertex(new VectorReffrence[] { points[i], points[i+1] });
+
+                             e = _this.pain(mesh, refVerts[1][1], refVerts[0][1], points[i], points[i + 1]);
+                             _MeshQuadReffrence.Add(e);
+
+                           // e = _this.pain(mesh, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);
+                           // _MeshQuadReffrence.Add(e);
                             
-                            e = _this.pain(mesh, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);
-                            _MeshQuadReffrence.Add(e);
+
                     }
                 }
             }
@@ -883,7 +890,7 @@ public class Cmesh : MonoBehaviour {
         }
         public VectorReffrence(GameObject gg, int refPoss, int refSpace)
         {
-            this.refObject = gg;
+            this._refObject = gg;
             this._refPoint = gg.transform.position;
             this._refPoss = refPoss;
             this._refSpace = refSpace;
@@ -891,7 +898,7 @@ public class Cmesh : MonoBehaviour {
         }
         public VectorReffrence(GameObject gg)
         {
-            this.refObject = gg;
+            this._refObject = gg;
             this._refPoint = gg.transform.position;
 
         }
@@ -933,6 +940,13 @@ public class Cmesh : MonoBehaviour {
         {
             this._refPoint = refPoint;
             _refPoss = -1;
+        }
+        public bool isRefObjectNull
+        {
+            get
+            {
+                return _refObject == null;
+            }
         }
         public GameObject refObject
         {
