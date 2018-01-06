@@ -240,9 +240,9 @@ public class waveTool : MonoBehaviour {
         //y = y / 50;
 
         float y_alt = 0;
-        if (false) { 
+        if (false) {
             newVertices = new Vector3[4 + (36 * 2)];
-        
+
             newVertices[0] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
 
             newVertices[1] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt), waveflow[i + 1].PosY.Evaluate(y_alt), waveflow[i + 1].PosZ.Evaluate(y_alt));
@@ -261,7 +261,7 @@ public class waveTool : MonoBehaviour {
                 index++;
             }
             i++;
-         //   print(index);
+            //   print(index);
             y_alt = 0;
 
             newVertices[index] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
@@ -283,31 +283,37 @@ public class waveTool : MonoBehaviour {
         }
         else
         {
-            newVertices[0] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
+            int e = 4;
+            if (e > 0)
+            {
+                newVertices[0] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
 
-            newVertices[1] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt), waveflow[i + 1].PosY.Evaluate(y_alt), waveflow[i + 1].PosZ.Evaluate(y_alt));
+                newVertices[1] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt), waveflow[i + 1].PosY.Evaluate(y_alt), waveflow[i + 1].PosZ.Evaluate(y_alt));
 
-            newVertices[2] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt + .03f), waveflow[i + 1].PosY.Evaluate(y_alt + .03f), waveflow[i + 1].PosZ.Evaluate(y_alt + .03f));
+                newVertices[2] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt + .03f), waveflow[i + 1].PosY.Evaluate(y_alt + .03f), waveflow[i + 1].PosZ.Evaluate(y_alt + .03f));
 
-            newVertices[3] = new Vector3(waveflow[i].PosX.Evaluate(y_alt + .03f), waveflow[i].PosY.Evaluate(y_alt + .03f), waveflow[i].PosZ.Evaluate(y_alt + .03f));
-
-            newVertices[4] = new Vector3(waveflow[i + 2].PosX.Evaluate(y_alt), waveflow[i + 2].PosY.Evaluate(y_alt), waveflow[i + 2].PosZ.Evaluate(y_alt));
-
-            newVertices[5] = new Vector3(waveflow[i + 2].PosX.Evaluate(y_alt + .03f), waveflow[i + 2].PosY.Evaluate(y_alt + .03f), waveflow[i + 2].PosZ.Evaluate(y_alt + .03f));
-
-            newVertices[6] = new Vector3(waveflow[i + 3].PosX.Evaluate(y_alt + .03f), waveflow[i + 3].PosY.Evaluate(y_alt + .03f), waveflow[i + 3].PosZ.Evaluate(y_alt + .03f));
-
-            newVertices[7] = new Vector3(waveflow[i + 3].PosX.Evaluate(y_alt), waveflow[i + 3].PosY.Evaluate(y_alt), waveflow[i + 3].PosZ.Evaluate(y_alt));
+                newVertices[3] = new Vector3(waveflow[i].PosX.Evaluate(y_alt + .03f), waveflow[i].PosY.Evaluate(y_alt + .03f), waveflow[i].PosZ.Evaluate(y_alt + .03f));
+            }  if (e > 1) {
 
 
-            y_alt = .06f;
-            newVertices[9] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
+                newVertices[4] = new Vector3(waveflow[i + 2].PosX.Evaluate(y_alt), waveflow[i + 2].PosY.Evaluate(y_alt), waveflow[i + 2].PosZ.Evaluate(y_alt));
 
-            newVertices[8] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt), waveflow[i + 1].PosY.Evaluate(y_alt), waveflow[i + 1].PosZ.Evaluate(y_alt));
+                newVertices[5] = new Vector3(waveflow[i + 2].PosX.Evaluate(y_alt + .03f), waveflow[i + 2].PosY.Evaluate(y_alt + .03f), waveflow[i + 2].PosZ.Evaluate(y_alt + .03f));
 
-            newVertices[11] = new Vector3(waveflow[i + 2].PosX.Evaluate(y_alt + .03f), waveflow[i + 2].PosY.Evaluate(y_alt + .03f), waveflow[i + 2].PosZ.Evaluate(y_alt + .03f));
+                newVertices[6] = new Vector3(waveflow[i + 3].PosX.Evaluate(y_alt + .03f), waveflow[i + 3].PosY.Evaluate(y_alt + .03f), waveflow[i + 3].PosZ.Evaluate(y_alt + .03f));
 
-            newVertices[10] = new Vector3(waveflow[i + 3].PosX.Evaluate(y_alt + .03f), waveflow[i + 3].PosY.Evaluate(y_alt + .03f), waveflow[i + 3].PosZ.Evaluate(y_alt + .03f));
+                newVertices[7] = new Vector3(waveflow[i + 3].PosX.Evaluate(y_alt), waveflow[i + 3].PosY.Evaluate(y_alt), waveflow[i + 3].PosZ.Evaluate(y_alt));
+            }  if (e > 2) { 
+
+                y_alt = .06f;
+                newVertices[9] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
+
+                newVertices[8] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt), waveflow[i + 1].PosY.Evaluate(y_alt), waveflow[i + 1].PosZ.Evaluate(y_alt));
+
+                newVertices[11] = new Vector3(waveflow[i + 2].PosX.Evaluate(y_alt + .03f), waveflow[i + 2].PosY.Evaluate(y_alt + .03f), waveflow[i + 2].PosZ.Evaluate(y_alt + .03f));
+
+                newVertices[10] = new Vector3(waveflow[i + 3].PosX.Evaluate(y_alt + .03f), waveflow[i + 3].PosY.Evaluate(y_alt + .03f), waveflow[i + 3].PosZ.Evaluate(y_alt + .03f));
+            }
         }
 
 

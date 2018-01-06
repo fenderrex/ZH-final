@@ -147,7 +147,7 @@ public class Cmesh : MonoBehaviour {
     }
     void vectorError(string vector)
     {
-        print("error " + vector + " is a single refrence vector not a edge");
+    //    print("error " + vector + " is a single refrence vector not a edge");
     }
 
     QuadReffrence pain(Mesh mesh, VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
@@ -390,7 +390,29 @@ public class Cmesh : MonoBehaviour {
                            new Vector3(-1, 0, 0), new Vector3(-1, 1, 0),
                            new Vector3(0, -1, 0), new Vector3(-1, -1, 0)};//, new Vector3(0, 0, 1), new Vector3(0, 1, 1), new Vector3(1, 1, 1), new Vector3(1, 0, 1) };
         //buildMesh(vert);
+        float[] t = { 10, 8, 5, 3, 1, 0 };
+        int[] e=insertionSort(t);
+
     }
+    public static int[] insertionSort(float[] arr)
+    {
+        int[] indices = new int[arr.Length];
+        indices[0] = 0;
+        for (int i = 1; i < arr.Length; i++)//this sets where to find the postion to start sorting
+        {
+            int j = i;
+            for (; j >= 1 && arr[j] < arr[j - 1]; j--)//if the one before is gratter swap, loop untill it iten is in sorted place this moves one at a time
+            {
+                float temp = arr[j];
+                arr[j] = arr[j - 1];
+                arr[j - 1] = temp;
+                indices[j] = indices[j - 1];
+            }
+            indices[j] = i;
+        }
+        return indices;//indices of sorted elements
+    }
+
     public void buildMesh(Vector3[] vert) { 
         vert_h = new GameObject[vert.Length];
         int ii = 0;
@@ -398,8 +420,9 @@ public class Cmesh : MonoBehaviour {
          // { a, b, c, d, c1, d1, c2, d2, c3, d3, c4, d4, c5, d5 };
         foreach (GameObject h in vert_h)
         {
+
             GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.transform.parent = transform;
+            sphere.transform.parent = transform.parent;
             sphere.transform.localPosition = vert[ii]; 
             sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
             sphere.name = ii.ToString();
@@ -407,7 +430,7 @@ public class Cmesh : MonoBehaviour {
             ht[ii]=new VectorReffrence(vert_h[ii]);
             ii++;
         }
-        print("newVertices processed");
+     //   print("newVertices processed");
         MeshFilter meshf = GetComponent<MeshFilter>();
         MeshReffrence MM = new MeshReffrence(this, meshf.mesh, ht);
         MM.buildQuadMesh(this, meshf.mesh, ht);
@@ -536,7 +559,10 @@ public class Cmesh : MonoBehaviour {
         VectorReffrence[] _edges = new VectorReffrence[4 * 2];
         Mesh mesh = new Mesh();
         Cmesh _this;
+        public QuadReffrence()
+        {
 
+        }
         public QuadReffrence(Mesh mesh, VectorReffrence[] meshVectorRef, char[] edges)
         {
             this.mesh = mesh;
@@ -576,42 +602,71 @@ public class Cmesh : MonoBehaviour {
         /// </summary>
         /// <param name="que">VectorReffrence list to find closest edge</param>
         /// <returns></returns>
-        public VectorReffrence[] getPairableVertex(VectorReffrence[] que)
+        public VectorReffrence[][] getPairableVertex(VectorReffrence[] que, VectorReffrence[] edges)
         {
             List<Vector3> Aout = new List<Vector3>();
             foreach (VectorReffrence vr in que)
             {
                 Aout.Add(vr.refPoint);
             }
-            return getPairableVertex(Aout.ToArray());
+
+            //print("VRTV");
+            return getPairableVertex(Aout.ToArray(),edges);
+
 
         }
         /// <summary>
         /// returns a array of VectorReffrence paird with que 
         /// </summary>
         /// <param name="que">Vector3 list to find closest edge</param>
-        public VectorReffrence[] getPairableVertex(Vector3[] que)//we accept a list so we only go through the edge list once
+        public VectorReffrence[][] getPairableVertex(Vector3[] que, VectorReffrence[] edges)//we accept a list so we only go through the edge list once
         {
-            float[] distace = new float[que.Length];
-            VectorReffrence[] refP = new VectorReffrence[que.Length];
-            for (int i = 0; i < que.Length; i++)
-            {
-                distace[i] = Mathf.Infinity;
-            }
-            for (int i = 0; i < _edges.Length; i += 2)
-            {
-                //double distace=Mathf.Infinity;
-                for (int r = 0; r < que.Length; r += 1)
-                {
-                    float d = Vector3.Distance(_edges[i].refPoint, que[r]);
-                    if (d < distace[r])
-                    {
-                        distace[r] = d;
-                        refP[r] = _edges[i];
-                    }
-                }
-            }
+            
+            float[][] distace = new float[que.Length][];//[Mathf.Min(_edges.Length,10)];
+            VectorReffrence[][] refP = new VectorReffrence[que.Length][];// Mathf.Min(_edges.Length, 10)];
+                                                                         // for (int i = 0; i < _edges.Length; i += 1)
+                                                                         //{
+                                                                         //double distace=Mathf.Infinity;
+                                                                         //    for (int r = 0; r < que.Length; r += 1)
+                                                                         //    {
+                                                                         //        float d = Vector3.Distance(_edges[i].refPoint, que[r]);
+                                                                         //        if (d < distace[r, i])
+                                                                         //        {
+                                                                         //            distace[r, i] = Mathf.Infinity;
 
+            //        }
+            //    }
+            //}
+           // print("spaces " + edges.Length);
+           for (int q = 0; q < que.Length; q += 1) {
+                //double distace=Mathf.Infinity;
+                distace[q] = new float[edges.Length];
+                for (int e = 0; e < edges.Length; e += 1){
+                    float d = Vector3.Distance(edges[e].refPoint, que[q]);
+                //    print("spaces " + e+" "+q+ " "+ d);
+
+                    distace[q][e] = d;
+    
+                }
+               // distace[q]=qqq;
+    // print("spaces-" + que.Length);
+            }
+           // print("will not print");
+            for (int q = 0; q < que.Length; q += 1)
+            {
+
+                int[] sorted =insertionSort(distace[q]);//distace[q] holds a list of distances of edges from point q orderd by edge list if the last point is the closest the index of the last item is returned in first postion of the returnd array
+                int index = 0;
+                refP[q] = new VectorReffrence[sorted.Length];//sorted~= edges// may trunkate
+                foreach (int e in sorted)//for loops would give the index but the compiller can predict the block size
+                {
+                    VectorReffrence y = edges[e];
+                    refP[q][index] = y; // for each quary give a list of the closest items in assending order 
+               //     print(e);
+                    index++;
+                }
+
+            }
 
             return refP;
 
@@ -692,29 +747,13 @@ public class Cmesh : MonoBehaviour {
             this.meshVectorRef = meshVectorRef;
         }
 
-        VectorReffrence[] getPairableVertex(VectorReffrence[] que)//TODO: use direction for opposition
+        VectorReffrence[][] getPairableVertex(VectorReffrence[] que)//TODO: use direction for opptoaztion
         {
-            float[] distace = new float[que.Length];
-            VectorReffrence[] refP = new VectorReffrence[que.Length];
-            VectorReffrence[] edges = findEdges();
-            for (int i = 0; i < que.Length; i++)
-            {
-                distace[i] = Mathf.Infinity;
-            }
-            for (int i = 0; i < edges.Length; i += 2)
-            {
-                //double distace=Mathf.Infinity;
-                for (int r = 0; r < que.Length; r += 1)
-                {
-                    float d = Vector3.Distance(edges[i].refPoint, que[r].refPoint);
-                    if (d < distace[r])
-                    {
-                        distace[r] = d;
-                        refP[r] = edges[i];
-                    }
-                }
-            }
-            return refP;
+        //    print("VR HMM");
+            QuadReffrence testE = new QuadReffrence();
+            return testE.getPairableVertex(que, findEdges());
+
+           // return refP;
         }
         public List<QuadReffrence> MeshQuadReffrence
         {
@@ -723,13 +762,13 @@ public class Cmesh : MonoBehaviour {
 
         public void buildQuadMesh(Cmesh _this, Mesh mesh, VectorReffrence[] points) {
             QuadReffrence e;
-            VectorReffrence[] refVerts;
-            print("ready: "+ points.Length.ToString());
+            VectorReffrence[][] refVerts;
+       //     print("ready: "+ points.Length.ToString());
             if (points.Length >= 4)
             {
                 
                 e = _this.pain(mesh, points[0], points[1], points[2], points[3]);
-                print("has 4!");
+       //         print("has 4!");
                 _MeshQuadReffrence.Add(e);
                 
                 if (points.Length >= 6){
@@ -739,7 +778,7 @@ public class Cmesh : MonoBehaviour {
                     
                             refVerts = getPairableVertex(new VectorReffrence[] { points[i], points[i+1] });
                             
-                            e = _this.pain(mesh, refVerts[1], refVerts[0], points[i], points[i + 1]);
+                            e = _this.pain(mesh, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);
                             _MeshQuadReffrence.Add(e);
                     }
                 }
