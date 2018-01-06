@@ -413,55 +413,67 @@ public class Cmesh : MonoBehaviour {
         return indices;//indices of sorted elements
     }
 
-    public void buildMesh(Vector3[] vert) { 
+    public void buildMesh(Vector3[] vert)
+    {
         vert_h = new GameObject[vert.Length];
         int ii = 0;
-        VectorReffrence[] ht=new VectorReffrence[vert.Length];
-         // { a, b, c, d, c1, d1, c2, d2, c3, d3, c4, d4, c5, d5 };
+        VectorReffrence[] ht = new VectorReffrence[vert.Length];
+        // { a, b, c, d, c1, d1, c2, d2, c3, d3, c4, d4, c5, d5 };
         foreach (GameObject h in vert_h)
         {
 
             GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             sphere.transform.parent = transform.parent;
-            sphere.transform.localPosition = vert[ii]; 
+            sphere.transform.localPosition = vert[ii];
             sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
             sphere.name = ii.ToString();
             vert_h[ii] = sphere;
-            ht[ii]=new VectorReffrence(vert_h[ii]);
+            ht[ii] = new VectorReffrence(vert_h[ii]);
             ii++;
         }
-     //   print("newVertices processed");
+        //   print("newVertices processed");
         MeshFilter meshf = GetComponent<MeshFilter>();
         MeshReffrence MM = new MeshReffrence(this, meshf.mesh, ht);
         MM.buildQuadMesh(this, meshf.mesh, ht);
 
-           // QuadReffrence t= MM.MeshQuadReffrence.ToArray()[MM.MeshQuadReffrence.Count -2];//TODO: MeshReffrence proform a full search
+    }
+    /// <summary>
+    /// this is the magical entrance function where all the crazy auto mesh deduction starts
+    /// </summary>
+    /// <param name="verts"></param>
+    public void buildMesh(VectorReffrence[] verts)
+    {
+        int ii = 0;
+        Transform hierarchyNode = transform.parent.Find("mesh points collection");
+        GameObject meshPoints;
+        if (hierarchyNode == null)
+        {
+            meshPoints = new GameObject();// GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            meshPoints.name = "mesh points collection";
+            meshPoints.transform.parent = transform.parent;
+        }
+        else
+        {
+            meshPoints = hierarchyNode.gameObject;
+        }
+        foreach (VectorReffrence h in verts)
+        {
+            if (h.refObject == null) {
+                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.transform.parent = meshPoints.transform;
+                sphere.transform.localPosition = verts[ii].refPoint;
+                sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
+                sphere.name = ii.ToString();
+            }
+            
+         //   ht[ii] = new VectorReffrence(vert_h[ii]);
+            ii++;
+        }
+        //   print("newVertices processed");
+        MeshFilter meshf = GetComponent<MeshFilter>();
+        MeshReffrence MM = new MeshReffrence(this, meshf.mesh, verts);
+        MM.buildQuadMesh(this, meshf.mesh, verts);
 
-
-            // meshf.mesh = new Mesh();
-           // VectorReffrence[] i=t.getPairableVertex(new VectorReffrence[] { c3, d3 });
-
-           // h = new VectorReffrence[] {   i[1], i[0], c3, d3 };
-
-           // MM = new MeshReffrence(this, meshf.mesh, h);
-           // MM.buildQuadMesh(this, meshf.mesh, h);
-
-           // print(c3.ToString() +  "\n\n" + i[0].ToString()+ "\n\n" + d3.ToString() + "\n\n" + i[1].ToString());
-    
-        
-            /*
-            QuadReffrence e = pain(meshf.mesh, a, b, c, d);
-            VectorReffrence[] refVerts = e.getPairableVertex(new VectorReffrence[] { c1, d1 });
-            e = pain(meshf.mesh, refVerts[1], refVerts[0], c1, d1);
-
-            refVerts = e.getPairableVertex(new VectorReffrence[] { c2, d2 });
-            e = pain(meshf.mesh, refVerts[1], refVerts[0], c2, d2);
-            */
-        
-        //  meshf.mesh = mesh;
-        //   meshf.mesh=pain(mesh,vert_h[0].transform.localPosition, vert_h[1].transform.localPosition, vert_h[2].transform.localPosition, vert_h[3].transform.localPosition);
-        // tube(vert_h[0].transform.position, vert_h[1].transform.position, vert_h[2].transform.position, vert_h[3].transform.position,
-        //   vert_h[4].transform.position, vert_h[5].transform.position, vert_h[6].transform.position, vert_h[7].transform.position);
     }
 
     // Update is called once per frame
@@ -819,7 +831,7 @@ public class Cmesh : MonoBehaviour {
     /// byReff is true if we don't have a vertex
     /// hasReff is true if we have a index and vertex
     /// </summary>
-    class VectorReffrence //VectorReffrence is used to hold a vector or the location of a vector in a mesh. TODO: should it also hold a mesh?
+    public class VectorReffrence //VectorReffrence is used to hold a vector or the location of a vector in a mesh. TODO: should it also hold a mesh?
     {
         public string ID = null;
 
