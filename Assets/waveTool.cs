@@ -225,7 +225,7 @@ public class waveTool : MonoBehaviour {
         waveTool flow = wave.GetComponent<waveTool>();
         waveTool.Arch[] rails = flow.RefreshNodes();
         print("Refreshed nodes");
-        Vector3[] newVertices = new Vector3[60];
+        Vector3[] newVertices = new Vector3[90];
         // for (int i = 0; i < waveflow.Length; i+=1)
         //{
         print("sorting rails");
@@ -336,9 +336,9 @@ public class waveTool : MonoBehaviour {
                     a = i;
                     b = i+1;
                 }
-                for (int sub_I = 0; sub_I < 20; sub_I += 2)
+                for (int sub_I = 0; sub_I < 80; sub_I += 2)
                 {
-                    y_alt = sub_I / 20.0f;
+                    y_alt = sub_I / 40.0f;
 
 
                     

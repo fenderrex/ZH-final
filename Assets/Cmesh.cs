@@ -308,8 +308,45 @@ public class Cmesh : MonoBehaviour {
             vectorError("D");//error d is a single refrence vector not a edge //TODO: add debug
         }
 
-        Vector3[] vect = new Vector3[mesh.vertices.Length + newQuad.Count];
+        //TODO: this is a BIG O NO NO! coppying the entire mesh for each quad?!?!?!?!?
         int placmentIndex = mesh.vertices.Length;
+
+
+        Vector2[] uvs = new Vector2[mesh.vertices.Length + newQuad.Count];
+        for (int i = 0; i < mesh.uv.Length; i+=2)//this only works with a strip made one direction
+        {
+           int n= (mesh.uv.Length+ newQuad.Count) / 2;
+           int p = Mathf.FloorToInt(i / 2f);
+            if (p % 2 == 0)
+            {
+                uvs[i] = new Vector2(p, 0);
+                uvs[i + 1] = new Vector2(p, 1);
+            }
+            else
+            {
+                uvs[i+1] = new Vector2(p, 0);
+                uvs[i] = new Vector2(p, 1);
+            }
+            //uvs[i] = new Vector2(p * (1 / (float)(n - 1)),1) ;
+            //uvs[i+1] = new Vector2( p * (1 / (float)(n - 1)),0);
+        }
+        /*
+        uvs[0] = new Vector2(0, 0);
+        uvs[1] = new Vector2(0, 1);
+        uvs[2] = new Vector2(1, 1);
+        uvs[3] = new Vector2(1, 0);
+        if (uvs.Length > 4)
+        {
+            uvs[4] = new Vector2(2, 1);
+            uvs[5] = new Vector2(2, 0);
+
+        }
+
+        */
+
+
+        Vector3[] vect = new Vector3[mesh.vertices.Length + newQuad.Count];
+        
 
         for (int i = 0; i < mesh.vertices.Length; i++)//add mesh
         {
@@ -341,17 +378,11 @@ public class Cmesh : MonoBehaviour {
             tri[i + (placmentIndex)] = t2[i] - 1;
         }
 
-        for (int i = 0; i < tri.Length; i++)//add quad 1-4
-        {
-           // print(tri[i]);
-
-        }
-
         //Debug.Log("tri lenght: " + tri.Length.ToString() + "\nvect lenght: " + vect.Length.ToString());
 
         mesh.vertices = vect;
         mesh.triangles = tri;
-
+        mesh.uv = uvs;
         QuadReffrence Q = new QuadReffrence(mesh, new VectorReffrence[] { a, b, c, d }, edges);
 
         //t1  012;   t2  023
