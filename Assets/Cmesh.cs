@@ -8,6 +8,7 @@ public class Cmesh : MonoBehaviour {
     public Vector3[] newNormals = new Vector3[4];
     public int[] newTriangles = new int[6];
     public GameObject wave;
+    public List<GameObject> _meshes=new List<GameObject>();
     // Use this for initialization
     Mesh tube(VectorReffrence a1, VectorReffrence b1, VectorReffrence c1, VectorReffrence d1, VectorReffrence a2, VectorReffrence b2, VectorReffrence c2, VectorReffrence d2)
     {
@@ -149,7 +150,7 @@ public class Cmesh : MonoBehaviour {
     {
     //    print("error " + vector + " is a single refrence vector not a edge");
     }
-
+    //adds a single quad to given mesh
     QuadReffrence pain(Mesh mesh, VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
     {
 
@@ -412,11 +413,26 @@ public class Cmesh : MonoBehaviour {
         }
         return indices;//indices of sorted elements
     }
+    public GameObject MeshObject(string name)
+    {
+        //build
+        GameObject meshOjbect = new GameObject();// GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        meshOjbect.name = "The mesh for - "+name;
+        meshOjbect.transform.parent = transform.parent;
+        meshOjbect.AddComponent<MeshFilter>();
+        meshOjbect.AddComponent<MeshRenderer>();
+
+
+        //exit build
+        _meshes.Add(meshOjbect);
+        return meshOjbect;
+
+    }
     /// <summary>
     /// this is the slower(+n) magical entrance function where all the crazy auto mesh deduction starts
     /// </summary>
     /// <param name="verts">this list of Vector3 is converted into VectorReffrence this can be timely so conciter the VectorReffrence overide</param>
-    public void buildMesh(Vector3[] verts)
+    public void buildMesh(Vector3[] verts, MeshFilter meshf)
     {
    
         VectorReffrence[] ht = new VectorReffrence[verts.Length];
@@ -429,15 +445,18 @@ public class Cmesh : MonoBehaviour {
         }
         //   print("newVertices processed");
 
-        buildMesh(ht);
+        buildMesh(ht,meshf);
 
     }
     /// <summary>
     /// this is the magical entrance function where all the crazy auto mesh deduction starts
     /// </summary>
     /// <param name="verts"></param>
-    public void buildMesh(VectorReffrence[] verts)
+    public void buildMesh(VectorReffrence[] verts, MeshFilter meshf)
     {
+        // = GetComponent<MeshFilter>();
+        
+
         int ii = 0;
         Transform hierarchyNode = transform.parent.Find("mesh points collection");
         GameObject meshPoints;
@@ -453,21 +472,63 @@ public class Cmesh : MonoBehaviour {
         }
         foreach (VectorReffrence h in verts)
         {
-            if (h.isRefObjectNull) {
+            if (h.isRefObjectNull)
+            {
                 GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 sphere.transform.parent = meshPoints.transform;
                 sphere.transform.localPosition = verts[ii].refPoint;
                 sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
                 sphere.name = ii.ToString();
             }
-            
-         //   ht[ii] = new VectorReffrence(vert_h[ii]);
+
+            //   ht[ii] = new VectorReffrence(vert_h[ii]);
+            ii++;
+        }
+        //   print("newVertices processed");
+        MeshReffrence MM = new MeshReffrence(this, meshf.mesh, verts);
+        MM.buildQuadMesh(this, meshf.mesh, verts);
+
+    }
+
+    public void buildMesh(VectorReffrence[] verts,bool old)
+    {
+        int shapeSize = 4;
+        int ii = 0;
+        Transform hierarchyNode = transform.parent.Find("mesh points collection");
+        GameObject meshPoints;
+        if (hierarchyNode == null)
+        {
+            meshPoints = new GameObject();// GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            meshPoints.name = "mesh points collection";
+            meshPoints.transform.parent = transform.parent;
+        }
+        else
+        {
+            meshPoints = hierarchyNode.gameObject;
+        }
+        foreach (VectorReffrence h in verts)
+        {
+            if (h.isRefObjectNull)
+            {
+                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.transform.parent = meshPoints.transform;
+                sphere.transform.localPosition = verts[ii].refPoint;
+                sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
+                sphere.name = ii.ToString();
+            }
+
+            //   ht[ii] = new VectorReffrence(vert_h[ii]);
             ii++;
         }
         //   print("newVertices processed");
         MeshFilter meshf = GetComponent<MeshFilter>();
         MeshReffrence MM = new MeshReffrence(this, meshf.mesh, verts);
-        MM.buildQuadMesh(this, meshf.mesh, verts);
+        for(int indexOfShape=0; indexOfShape < shapeSize; indexOfShape++)
+        {
+
+            MM.buildQuadMesh(this, meshf.mesh, verts);
+        }
+        
 
     }
 
@@ -502,6 +563,7 @@ public class Cmesh : MonoBehaviour {
         //   tube(vert_h[0].transform.position, vert_h[1].transform.position, vert_h[2].transform.position, vert_h[3].transform.position,
         //          vert_h[4].transform.position, vert_h[5].transform.position, vert_h[6].transform.position, vert_h[7].transform.position);
     }
+    /*
     void triTube()
     {
         newTriangles[0] = 0;
@@ -536,6 +598,8 @@ public class Cmesh : MonoBehaviour {
         newTriangles[22] = 7;
         newTriangles[23] = 1;
     }
+    */
+    /*
     Mesh BuildMesh(Mesh mesh)
     {
         // MeshFilter meshf = GetComponent<MeshFilter>();
@@ -552,7 +616,7 @@ public class Cmesh : MonoBehaviour {
         return mesh;
 
     }
-
+    */
     //  make a object that can hold a mesh and its VectorReffrence's of that mesh aswell as edges.
     //   this object should have a function that can be called by VectorObject interface.
     //    
@@ -781,7 +845,7 @@ public class Cmesh : MonoBehaviour {
             if (points.Length >= 4)
             {
                 
-                e = _this.pain(mesh, points[0], points[1], points[2], points[3]);
+                e = _this.pain(mesh, points[1], points[0], points[2], points[3]);
        //         print("has 4!");
                 _MeshQuadReffrence.Add(e);
                 
@@ -792,7 +856,7 @@ public class Cmesh : MonoBehaviour {
                     
                             refVerts = getPairableVertex(new VectorReffrence[] { points[i], points[i+1] });
 
-                             e = _this.pain(mesh, refVerts[1][1], refVerts[0][1], points[i], points[i + 1]);
+                             e = _this.pain(mesh, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);
                              _MeshQuadReffrence.Add(e);
 
                            // e = _this.pain(mesh, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);

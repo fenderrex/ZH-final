@@ -281,7 +281,7 @@ public class waveTool : MonoBehaviour {
             }
 
         }
-        else
+        else if(false)
         {
             int e = 4;
             if (e > 0)
@@ -314,19 +314,66 @@ public class waveTool : MonoBehaviour {
 
                 newVertices[10] = new Vector3(waveflow[i + 3].PosX.Evaluate(y_alt + .03f), waveflow[i + 3].PosY.Evaluate(y_alt + .03f), waveflow[i + 3].PosZ.Evaluate(y_alt + .03f));
             }
+        }else if (true)
+        {
+            Cmesh cm = GetComponent<Cmesh>();
+            cm.MeshObject("wall");
+            cm.MeshObject("roof");
+            cm.MeshObject("wall");
+            cm.MeshObject("floor");
+            i = 0;
+            for (int rLoop = 0 ;rLoop <= cm._meshes.Count-1 ;rLoop++)
+            {
+                int a, b;
+                if (cm._meshes.Count-1 == rLoop)
+                {
+                    print("we are not over indexing");
+                    a = i;
+                    b = 0;//don't over index
+                }
+                else
+                {
+                    a = i;
+                    b = i+1;
+                }
+                for (int sub_I = 0; sub_I < 20; sub_I += 2)
+                {
+                    y_alt = sub_I / 20.0f;
+
+
+                    
+                    newVertices[sub_I + 1] = new Vector3(waveflow[a].PosX.Evaluate(y_alt), waveflow[a].PosY.Evaluate(y_alt), waveflow[a].PosZ.Evaluate(y_alt));
+
+                    newVertices[sub_I] = new Vector3(waveflow[b].PosX.Evaluate(y_alt), waveflow[b].PosY.Evaluate(y_alt), waveflow[b].PosZ.Evaluate(y_alt));
+                    
+                }
+                cm.buildMesh(newVertices, cm._meshes.ToArray()[i].GetComponent<MeshFilter>());
+                i++;
+            }
+           /* for (int sub_I = 0; sub_I < 20; sub_I += 2)
+            {
+                y_alt = (sub_I) / 20.0f;
+                newVertices[sub_I + 1] = new Vector3(waveflow[i].PosX.Evaluate(y_alt), waveflow[i].PosY.Evaluate(y_alt), waveflow[i].PosZ.Evaluate(y_alt));
+
+                newVertices[sub_I] = new Vector3(waveflow[i + 1].PosX.Evaluate(y_alt), waveflow[i + 1].PosY.Evaluate(y_alt), waveflow[i + 1].PosZ.Evaluate(y_alt));
+
+            }
+            cm.buildMesh(newVertices, cm._meshes.ToArray()[i].GetComponent<MeshFilter>());
+            */
+
+
+
+
+
         }
 
 
 
         //    }
         // }
-        print("newVertices compleated");
-        print(newVertices.Length);
-        Vector3[] me = new Vector3[20];
 
 
-        Cmesh cm=GetComponent<Cmesh>();
-        cm.buildMesh(newVertices);
+
 
 
     }

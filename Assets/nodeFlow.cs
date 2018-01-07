@@ -68,7 +68,7 @@ public class nodeFlow : MonoBehaviour {
             {
                 min = a;
             }
-            print(child.name);
+        //    print(child.name);
             PosX.AddKey(new Keyframe(index, child.position.x, child.Find("leadIn").localPosition.x * 4, child.Find("leadOut").localPosition.x * 4));
             PosY.AddKey(new Keyframe(index, child.position.y, child.Find("leadIn").localPosition.y * 4, child.Find("leadOut").localPosition.y * 4));
             PosZ.AddKey(new Keyframe(index, child.position.z, child.Find("leadIn").localPosition.z * 4, child.Find("leadOut").localPosition.z * 4));
