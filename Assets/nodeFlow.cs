@@ -13,9 +13,8 @@ public class nodeFlow : MonoBehaviour {
     public GameObject Trail;
     public float TimeScale = 1;
     Vector3 last;
-
-    // Use this for initialization
-    void Start () {
+    private void Awake()
+    {
         if (cart == null)
         {
             cart = new GameObject();
@@ -25,6 +24,10 @@ public class nodeFlow : MonoBehaviour {
         }
         last = cart.transform.position;
         RefreshNodes(transform);
+    }
+    // Use this for initialization
+    void Start () {
+
 
     }
     void OnDrawGizmos()

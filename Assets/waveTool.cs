@@ -468,14 +468,19 @@ public class waveTool : MonoBehaviour {
        
 
     }
-
+    private void Awake()
+    {
+        RefreshRails(true);
+    }
     // Update is called once per frame
+
     private void Start()
     {
-       
-        RefreshRails(true);
+        build();//  RefreshRails(false);
+
+
         // BuildMesh();
-       // build();
+        // build();
         //debugGraphs();
     }
     void Update()
@@ -484,11 +489,7 @@ public class waveTool : MonoBehaviour {
 
         
 
-        if (Time.frameCount % 240 == 0)
-        {
-            Debug.Log("lets fuckup!");
-            build();//  RefreshRails(false);
-        }
+
         float currentT = 0;
         //  print(Time.time % currentT);
         float time = Time.time * Mathf.Round(TimeScale * 100f) / 100f;

@@ -98,7 +98,9 @@ public class Cmesh : MonoBehaviour {
         foreach (Vector3 vet in pre.vertices)
         {
 
-            ves[ii] = new VectorReffrence(vet);//, tri[ii]);//no we need the index that has value of the place in vertices// can appear more then onces...
+            VectorReffrence item = new VectorReffrence(vet);//, tri[ii]);//no we need the index that has value of the place in vertices// can appear more then onces...
+            item.refSpace = ii;
+            ves[ii] = item;
             ii++;
 
         }
@@ -128,7 +130,8 @@ public class Cmesh : MonoBehaviour {
             ii++;
         }
         */
-        QuadReffrence preQuad = pain(pre, ves[0], ves[1], ves[2], ves[3]);//
+        MeshReffrence u = new MeshReffrence(this,pre);
+        QuadReffrence preQuad = pain(u, ves[0], ves[1], ves[2], ves[3]);//
 
         return pre;
     }
@@ -141,17 +144,17 @@ public class Cmesh : MonoBehaviour {
     /// <param name="c"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    QuadReffrence pain(Mesh mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d)//ONLY FOR SINGLE PAIN! NOT FOR MESH USE WILL BUILD UN-OPPTOMISED MESH
+    QuadReffrence pain(MeshReffrence mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d)//ONLY FOR SINGLE PAIN! NOT FOR MESH USE WILL BUILD UN-OPPTOMISED MESH
     {
         return pain(mesh, new VectorReffrence(a), new VectorReffrence(b), new VectorReffrence(c), new VectorReffrence(d));// for quick start qauds/pains
 
     }
     void vectorError(string vector)
     {
-    //    print("error " + vector + " is a single refrence vector not a edge");
+       print("error " + vector + " is a single refrence vector not a edge");
     }
     //adds a single quad to given mesh
-    QuadReffrence pain(Mesh mesh, VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
+    QuadReffrence pain(MeshReffrence mesh, VectorReffrence a, VectorReffrence b, VectorReffrence c, VectorReffrence d)
     {
 
 
@@ -208,15 +211,34 @@ public class Cmesh : MonoBehaviour {
         b.ID = "b";
         c.ID = "c";
         d.ID = "d";
+        print(a.refSpace + " _ " + b.refSpace + " _ " + c.refSpace + " _ " + d.refSpace + " _ ");
         if (a.byRef && b.byRef)
         {
             //  newVerts+=2;
             edges[0] = '0';
             edges[1] = '0';
             //because every other vertex in a quad shares one vertex with two triangles we will allways set 3 vertices in triagles
-            t1[0] = mesh.triangles[a.refPoss];
-            t1[2] = mesh.triangles[b.refPoss];
-            t2[0] = mesh.triangles[a.refPoss];
+
+            if (a.refPoss == -1 || b.refPoss == -1)
+            {
+                if (a.refSpace == -1)
+                {
+                    vectorError("a");
+                }
+                if (b.refSpace == -1)
+                {
+                    vectorError("b");
+                }
+                t1[0] = a.refSpace;
+                t1[2] = b.refSpace;
+                t2[0] = a.refSpace;
+            }
+            else
+            {
+                t1[0] = mesh.triangles[a.refPoss];
+                t1[2] = mesh.triangles[b.refPoss];
+                t2[0] = mesh.triangles[a.refPoss];
+            }
         }
 
         if (c.byRef && b.byRef)//a && b accounted for
@@ -224,27 +246,62 @@ public class Cmesh : MonoBehaviour {
             //   newVerts += 2;
             edges[2] = '0';
             edges[3] = '0';
-            t1[1] = mesh.triangles[c.refPoss];
-            t1[2] = mesh.triangles[b.refPoss];
-            t2[2] = mesh.triangles[c.refPoss];
+            if (c.refPoss == -1 || b.refPoss == -1)
+            {
+                t1[1] = c.refSpace;
+                t1[2] = b.refSpace;
+                t2[2] = c.refSpace;
+            }
+            else
+            {
+                t1[1] = mesh.triangles[c.refPoss];
+                t1[2] = mesh.triangles[b.refPoss];
+                t2[2] = mesh.triangles[c.refPoss];
+            }
         }
         if (a.byRef && d.byRef)
         {
             //   newVerts += 2;
             edges[6] = '0';
             edges[7] = '0';
-            t2[0] = mesh.triangles[a.refPoss];
-            t2[1] = mesh.triangles[d.refPoss];
-            t1[0] = mesh.triangles[a.refPoss];
+            if (a.refPoss == -1 || d.refPoss == -1)
+            {
+                if (a.refSpace == -1)
+                {
+                    vectorError("a");
+                }
+                if (d.refSpace == -1)
+                {
+                    vectorError("d");
+                }
+                t2[0] = a.refSpace;
+                t2[1] = d.refSpace;
+                t1[0] = a.refSpace;
+            }
+            else
+            {
+                t2[0] = mesh.triangles[a.refPoss];
+                t2[1] = mesh.triangles[d.refPoss];
+                t1[0] = mesh.triangles[a.refPoss];
+            }
         }
         if (c.byRef && d.byRef)
         {
             // newVerts += 2;
             edges[4] = '0';
             edges[5] = '0';
-            t2[1] = mesh.triangles[d.refPoss];
-            t2[2] = mesh.triangles[c.refPoss];
-            t1[1] = mesh.triangles[c.refPoss];
+            if (d.refPoss == -1 || c.refPoss == -1)
+            {
+                t1[1] = d.refSpace;
+                t1[2] = c.refSpace;
+                t2[2] = c.refSpace;
+            }
+            else
+            {
+                t1[1] = mesh.triangles[d.refPoss];
+                t1[2] = mesh.triangles[c.refPoss];
+                t2[2] = mesh.triangles[c.refPoss];
+            }
         }
 
 
@@ -259,7 +316,8 @@ public class Cmesh : MonoBehaviour {
         //     edge
         List<Vector3> newQuad = new List<Vector3>();
         int pos = mesh.vertices.Length;
-      //  print("ver l: " + pos.ToString());
+        //TODO: refPoss support
+        //  print("ver l: " + pos.ToString());
         if (a.byRef == false)//we do not look up this vertex in the mesh with refpos
         {
 
@@ -313,6 +371,7 @@ public class Cmesh : MonoBehaviour {
 
 
         Vector2[] uvs = new Vector2[mesh.vertices.Length + newQuad.Count];
+        /*
         for (int i = 0; i < mesh.uv.Length; i+=2)//this only works with a strip made one direction
         {
            int n= (mesh.uv.Length+ newQuad.Count) / 2;
@@ -330,6 +389,27 @@ public class Cmesh : MonoBehaviour {
             //uvs[i] = new Vector2(p * (1 / (float)(n - 1)),1) ;
             //uvs[i+1] = new Vector2( p * (1 / (float)(n - 1)),0);
         }
+        */
+        for (int i = 0; i < mesh.uv.Length; i += 2)//this only works with a strip made one direction
+        {
+            int n = (mesh.uv.Length + newQuad.Count) / 2;
+            int p = Mathf.FloorToInt(i / 2f);
+            if (p < 1)
+            {
+                uvs[i] = new Vector2(p / 3, 0);
+                uvs[i + 1] = new Vector2(p / 3, 1);
+            }
+            else
+            {
+                uvs[i + 1] = new Vector2(p / 3, 0);
+                uvs[i] = new Vector2(p / 3, 1);
+            }
+
+
+            //uvs[i] = new Vector2(p * (1 / (float)(n - 1)),1) ;
+            //uvs[i+1] = new Vector2( p * (1 / (float)(n - 1)),0);
+        }
+
         /*
         uvs[0] = new Vector2(0, 0);
         uvs[1] = new Vector2(0, 1);
@@ -370,21 +450,42 @@ public class Cmesh : MonoBehaviour {
 
         for (int i = 0; i < 3; i++)//add t1
         {
+            if (t1[i] - 1 == -1)
+            {
+                print("t1 !!!!!!!!!!");
+            }
+            if (i + (placmentIndex) == 6)
+            {
+                print("t1 at " + i);
+            }
             tri[i + (placmentIndex)] = t1[i] - 1;
+  
         }
         placmentIndex += 3;
         for (int i = 0; i < 3; i++)//add t2
         {
+            if (t2[i] - 1 == -1)
+            {
+                print("t2 !!!!!!!!!!");
+            }
             tri[i + (placmentIndex)] = t2[i] - 1;
+            if(i + (placmentIndex) == 6)
+            {
+                print("t2 at " + i);
+            }
         }
 
         //Debug.Log("tri lenght: " + tri.Length.ToString() + "\nvect lenght: " + vect.Length.ToString());
 
-        mesh.vertices = vect;
-        mesh.triangles = tri;
-        mesh.uv = uvs;
-        QuadReffrence Q = new QuadReffrence(mesh, new VectorReffrence[] { a, b, c, d }, edges);
 
+        //   print(vect.Length + "_____" + tri.Length);
+      // mesh.vertices = vect;
+      // mesh.triangles = tri;
+      //  mesh.uv = uvs;
+
+       // new MeshReffrence(this, mesh.mesh, vect, uvs, tri);
+        QuadReffrence Q = new QuadReffrence(mesh, new VectorReffrence[] { a, b, c, d }, edges);
+        
         //t1  012;   t2  023
         //     edge 
         //b  1-------   2 c
@@ -471,7 +572,10 @@ public class Cmesh : MonoBehaviour {
         int i = 0;
         foreach (Vector3 h in verts)
         {
-            ht[i] = new VectorReffrence(h);
+            VectorReffrence point = new VectorReffrence(h);
+            point.refSpace = i;
+            ht[i] = point;
+
             i++;
         }
         //   print("newVertices processed");
@@ -481,6 +585,7 @@ public class Cmesh : MonoBehaviour {
     }
     /// <summary>
     /// this is the magical entrance function where all the crazy auto mesh deduction starts
+    /// builds game objects attaches it to a MeshReffrence
     /// </summary>
     /// <param name="verts"></param>
     public void buildMesh(VectorReffrence[] verts, MeshFilter meshf)
@@ -501,6 +606,7 @@ public class Cmesh : MonoBehaviour {
         {
             meshPoints = hierarchyNode.gameObject;
         }
+        //int meshPos = 0;
         foreach (VectorReffrence h in verts)
         {
             if (h.isRefObjectNull)
@@ -508,6 +614,7 @@ public class Cmesh : MonoBehaviour {
                 GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 sphere.transform.parent = meshPoints.transform;
                 sphere.transform.localPosition = verts[ii].refPoint;
+                verts[ii].refSpace = ii;
                 sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
                 sphere.name = ii.ToString();
             }
@@ -516,11 +623,11 @@ public class Cmesh : MonoBehaviour {
             ii++;
         }
         //   print("newVertices processed");
-        MeshReffrence MM = new MeshReffrence(this, meshf.mesh, verts);
-        MM.buildQuadMesh(this, meshf.mesh, verts);
+        MeshReffrence MM = new MeshReffrence(this, meshf.mesh,verts);
+        MM.buildQuadMesh(this, verts);
 
     }
-
+    /*
     public void buildMesh(VectorReffrence[] verts,bool old)
     {
         int shapeSize = 4;
@@ -544,6 +651,7 @@ public class Cmesh : MonoBehaviour {
                 GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 sphere.transform.parent = meshPoints.transform;
                 sphere.transform.localPosition = verts[ii].refPoint;
+                verts[ii].refSpace = ii;
                 sphere.transform.localScale = new Vector3(.1f, .1f, .1f);
                 sphere.name = ii.ToString();
             }
@@ -562,7 +670,7 @@ public class Cmesh : MonoBehaviour {
         
 
     }
-
+    */
     // Update is called once per frame
     void Update() {
         // MeshFilter meshf = GetComponent<MeshFilter>();
@@ -658,14 +766,14 @@ public class Cmesh : MonoBehaviour {
     class QuadReffrence //TODO: :MeshReffrence
     {
         VectorReffrence[] meshVectorRef = new VectorReffrence[4 * 6];
-        VectorReffrence[] _edges = new VectorReffrence[4 * 2];
-        Mesh _mesh = new Mesh();
+        List<VectorReffrence> _edges = new List<VectorReffrence>();
+        MeshReffrence _mesh = null;// new MeshReffrence();
         Cmesh _this;
         public QuadReffrence()
         {
 
         }
-        public QuadReffrence(Mesh mesh, VectorReffrence[] meshVectorRef, char[] edges)
+        public QuadReffrence(MeshReffrence mesh, VectorReffrence[] meshVectorRef, char[] edges)
         {
             this._mesh = mesh;
             this.meshVectorRef[0] = meshVectorRef[0];
@@ -681,15 +789,17 @@ public class Cmesh : MonoBehaviour {
             this.meshVectorRef[7] = meshVectorRef[0];
             meshVectorRef = this.meshVectorRef;
 
-            for (int i = 0; i < 7; i += 2)
+            for (int i = 0; i < 7; i += 1)
             {
                 if ((edges[i] != '0' && edges[i + 1] != '0'))
                 {
                     //  print(i + 1);
                     if (meshVectorRef[i].hasRef && meshVectorRef[i + 1].hasRef)
                     {
-                        this._edges[i] = meshVectorRef[i];
-                        this._edges[i + 1] = meshVectorRef[i + 1];
+                        _edges.Add(meshVectorRef[i]);
+                        _edges.Add(meshVectorRef[i+1]);
+                        // this._edges[i] = meshVectorRef[i];
+                        // this._edges[i + 1] = meshVectorRef[i + 1];
                     }
                     else
                     {
@@ -762,7 +872,8 @@ public class Cmesh : MonoBehaviour {
                 refP[q] = new VectorReffrence[sorted.Length];//sorted~= edges// may trunkate
                 foreach (int e in sorted)//for loops would give the index but the compiller can predict the block size
                 {
-                    VectorReffrence y = edges[e];
+                    //  VectorReffrence y = edges[e];//this duplacates vertetexs
+                    VectorReffrence y = new VectorReffrence( edges[e].refSpace);
                     refP[q][index] = y; // for each quary give a list of the closest items in assending order 
                //     print(e);
                     index++;
@@ -778,10 +889,10 @@ public class Cmesh : MonoBehaviour {
         {
             get
             {
-                return _edges;
+                return _edges.ToArray();
             }
         }
-        public Mesh mesh
+        public MeshReffrence mesh
         {
             get
             {
@@ -834,17 +945,84 @@ public class Cmesh : MonoBehaviour {
 
 
     }
-
+    /// <summary>
+    /// MeshReffrence is a object responceable for holding UV triangles and vectors
+    /// untill it is to be constructed. this means we can reasion with a mesh structure without rebuilding the mesh each time we update the vertices 
+    /// </summary>
     class MeshReffrence
     {
 
-        Mesh mesh = null;
-        VectorReffrence[] meshVectorRef = null;
+        public Mesh mesh = null;
+        public VectorReffrence[] meshVectorRef = null;
         List<QuadReffrence> _MeshQuadReffrence = new List<QuadReffrence>();
         Cmesh _this;
         int[] edges = null;
-        public MeshReffrence(Cmesh _this, Mesh mesh, int[] edges, VectorReffrence[] meshVectorRef)
+        public int[] triangles = new int[0];
+        public Vector2[] uv = new Vector2[0];
+        public Vector3[] vertices
         {
+            get {
+                Vector3[] list = new Vector3[meshVectorRef.Length];
+                int i = 0;
+                foreach(VectorReffrence vert in meshVectorRef)
+                {
+                    list[i]=vert.refPoint;
+                    i++;
+                }
+                return list;
+            }
+        }
+        public MeshReffrence(Cmesh _this, Mesh mesh, VectorReffrence[] meshVectorRef, Vector2[] uv, int[] triangles)
+        {//TODO: try to build triangles from refPoss
+
+            this._this = _this;
+            this.uv = uv;
+            this.triangles = triangles;
+            this.mesh = mesh;
+            // this.edges = edges;
+            this.meshVectorRef = meshVectorRef;
+
+        }
+        public MeshReffrence(Cmesh _this, Mesh mesh)
+        {//TODO: try to build triangles from refPoss
+
+            this._this = _this;
+            this.uv = mesh.uv;
+            this.triangles = mesh.triangles;
+            this.mesh = mesh;
+            // this.edges = edges;
+            VectorReffrence[] refs = new VectorReffrence[mesh.vertices.Length];
+            int i = 0;
+            foreach (Vector3 resource in mesh.vertices)
+            {
+                refs[i] = new VectorReffrence(resource);
+                i++;
+            }
+            this.meshVectorRef = refs;
+
+        }
+        public MeshReffrence(Cmesh _this, Mesh mesh, Vector3[] meshVectorRef, Vector2[] uv, int[] triangles)
+        {//TODO: try to build triangles from refPoss
+
+            this._this = _this;
+            this.uv = uv;
+            this.triangles = triangles;
+            this.mesh = mesh;
+            // this.edges = edges;
+            VectorReffrence[] refs = new VectorReffrence[meshVectorRef.Length];
+            int i = 0;
+            foreach(Vector3 resource in meshVectorRef)
+            {
+                refs[i] = new VectorReffrence(resource);
+                i++;
+            }
+            this.meshVectorRef = refs;
+
+        }
+
+
+        public MeshReffrence(Cmesh _this, Mesh mesh, int[] edges, VectorReffrence[] meshVectorRef)
+        {//TODO: try to build triangles from refPoss
             this._this = _this;
             this.mesh = mesh;
             this.edges = edges;
@@ -869,14 +1047,14 @@ public class Cmesh : MonoBehaviour {
             get { return _MeshQuadReffrence; }
         }
 
-        public void buildQuadMesh(Cmesh _this, Mesh mesh, VectorReffrence[] points) {
+        public void buildQuadMesh(Cmesh _this, VectorReffrence[] points) {
             QuadReffrence e;
             VectorReffrence[][] refVerts;
        //     print("ready: "+ points.Length.ToString());
             if (points.Length >= 4)
             {
                 
-                e = _this.pain(mesh, points[1], points[0], points[2], points[3]);
+                e = _this.pain(this, points[1], points[0], points[2], points[3]);
        //         print("has 4!");
                 _MeshQuadReffrence.Add(e);
                 
@@ -886,8 +1064,8 @@ public class Cmesh : MonoBehaviour {
 
                     
                             refVerts = getPairableVertex(new VectorReffrence[] { points[i], points[i+1] });
-
-                             e = _this.pain(mesh, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);
+                            print("refspaces:" + refVerts[1][0].refSpace+"-"+ refVerts[0][0].refSpace + "-" + points[i].refSpace + "-" + points[i+1].refSpace);
+                             e = _this.pain(this, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);
                              _MeshQuadReffrence.Add(e);
 
                            // e = _this.pain(mesh, refVerts[1][0], refVerts[0][0], points[i], points[i + 1]);
@@ -912,6 +1090,7 @@ public class Cmesh : MonoBehaviour {
             {
                 foreach (VectorReffrence vert in quadReffrence.edges)
                 {
+                    print(vert);
                     if (vert.partEdge)
                     {
                         edgeQue.Add(vert);
