@@ -9,8 +9,11 @@ using System.Collections;
 
 public class locomove : MonoBehaviour {
     bool isOn = false;
+    public bool falling, stubble, idleing, walking, sitting = false;
+    public float walkingForward;
+    public float walkingLeft;
     // Use this for initialization
-    float distToGround=0;
+    float distToGround =0;
     public string ipAddress = "192.168.1.100";
     void Start () {
         distToGround = transform.GetComponent<Collider>().bounds.extents.y;
@@ -24,8 +27,8 @@ public class locomove : MonoBehaviour {
     private Vector3 moveDirection = Vector3.zero;
     float DJtimer = 0;
     bool IsGrounded(Transform t) {
-        
-       return Physics.Raycast(t.position, -Vector3.up, distToGround + 0.1f);
+        falling= Physics.Raycast(t.position, -Vector3.up, distToGround + 0.1f);
+        return falling;
     }
     bool jumpRelease=false;
     RaycastHit hit;
@@ -75,9 +78,13 @@ public class locomove : MonoBehaviour {
             }
             //moveDirection.y = gravity * Time.deltaTime;
         }
+        moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        walkingForward = moveDirection.z;
+        walkingLeft = moveDirection.x;
+
         if (controller.isGrounded||IsGrounded(transform))
         {
-            moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+          //  moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
             moveDirection = transform.TransformDirection(moveDirection);
             moveDirection = new Vector3(moveDirection.x, 0, moveDirection.z);
 
