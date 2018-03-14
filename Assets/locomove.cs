@@ -15,31 +15,118 @@ public class locomove : MonoBehaviour {
     // Use this for initialization
     float distToGround =0;
     public string ipAddress = "192.168.1.100";
-    void Start () {
-        distToGround = transform.GetComponent<Collider>().bounds.extents.y;
-        DJtimer = Time.time;
-    }
+
     Vector3 reflectVec;
     public float speed = 6.0F;
-    public float jumpSpeed = 16.0F;
+    float jumpSpeed = 16.0F;
+    public float jumpSpeedGoal = 16.0F;
     public float gravity = 20.0F;
     bool stableFooting = true;
     private Vector3 moveDirection = Vector3.zero;
     float DJtimer = 0;
-    bool IsGrounded(Transform t) {
-        falling= Physics.Raycast(t.position, -Vector3.up, distToGround + 0.1f);
-        return falling;
-    }
+
     bool jumpRelease=false;
     RaycastHit hit;
     float sy = 0;
     Ray ray = new Ray(new Vector3(0,0,0), new Vector3(0, -1, 0));
     public bool onDrugs = false;
+    public Actuation movments;
+
+
+    bool IsGrounded(Transform t)
+    {
+        falling = Physics.Raycast(t.position, -Vector3.up, distToGround + 0.1f);
+        return falling;
+    }
+
+    public class Actuation
+    {
+      
+        DefaltLogWalker _DLW;
+        public Actuation()
+        {
+            
+            _DLW = new DefaltLogWalker();
+        }
+        public interface IWalkable
+        {
+            void walk(Vector3 to);
+            void stumble();
+            void fall(Vector3 to);
+        }
+
+
+
+
+
+        public DefaltLogWalker DLW
+        {
+
+            get { return _DLW; }
+            set { _DLW = value; }
+
+        }
+
+        public class DefaltLogWalker : IWalkable
+        {
+            public void walk(Vector3 toWrite)
+            {
+                print(toWrite);
+            }
+            public void stumble()
+            {
+                print("stumble");
+            }
+            public void fall(Vector3 delta)
+            {
+                print(delta);
+            }
+        }
+
+
+
+     
+    private IWalkable walker;
+            
+
+
+        public void setwalker(IWalkable walkable)
+        {
+            this.walker = walkable;
+        }
+        public void walk(Vector3 delta)
+        {
+            this.walker.walk(delta);
+        }
+        public void fall(Vector3 delta)
+        {
+            this.walker.fall(delta);
+        }
+
+
+    }
+
+    float hight = 0;
+    void Awake()
+    {
+        movments = new Actuation();
+        Actuation.DefaltLogWalker i = movments.DLW;//defalt log walker
+      //  i.stumble();
+        movments.setwalker(i);//
+        
+      //  movments.walk(new Vector3(2, 0, 2));//set to idle
+
+        distToGround = transform.GetComponent<Collider>().bounds.extents.y;
+        DJtimer = Time.time;
+
+
+    }
+
     void Update()
     {
        // moveDirection = Vector3.zero;
         Vector3 slideAngle = Vector3.zero;// = Vector3.Cross(rotHandleForSlide, hit.normal);
-
+       
         // float sy=0;
 
         ray.origin = transform.position;
@@ -49,6 +136,7 @@ public class locomove : MonoBehaviour {
         }
         if (Physics.Raycast(ray, out hit))
         {
+        
             Vector3 incomingVec = hit.point - transform.position;
 
             reflectVec = Vector3.Reflect(incomingVec, hit.normal);
@@ -79,19 +167,27 @@ public class locomove : MonoBehaviour {
             //moveDirection.y = gravity * Time.deltaTime;
         }
         moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-        walkingForward = moveDirection.z;
-        walkingLeft = moveDirection.x;
+        walkingForward = Input.GetAxis("Vertical");
+        walkingLeft = Input.GetAxis("Horizontal");
+        moveDirection.y += jumpSpeed;
+        if (jumpSpeed > 0)
+        {
 
+            jumpSpeed -= 1f;// print(slide);
+
+        }
         if (controller.isGrounded||IsGrounded(transform))
         {
           //  moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
             moveDirection = transform.TransformDirection(moveDirection);
-            moveDirection = new Vector3(moveDirection.x, 0, moveDirection.z);
+            moveDirection = new Vector3(moveDirection.x,-((gravity) * Time.deltaTime), moveDirection.z);
 
             moveDirection *= speed;
+            Vector3 moveDirection1 = new Vector3(walkingForward, 0, walkingLeft);
+            movments.walk(moveDirection);
+            movments.fall(moveDirection);
             Vector3 slide = new Vector3((Mathf.Abs(slideAngle.x) * 180) / Mathf.PI, (Mathf.Abs(slideAngle.y) * 180) / Mathf.PI, (Mathf.Abs(slideAngle.z) * 180) / Mathf.PI);//rad to deg? seems to work
-                                                                                                                                                                            // print(slide);
-            
+
             if (onDrugs)
             {
                 if (Input.GetButton("Jump") && stableFooting)//jump
@@ -110,8 +206,9 @@ public class locomove : MonoBehaviour {
             }
             else if(Input.GetButton("Jump")&& stableFooting)//jump
             {
-               // print("jump");
-                moveDirection.y = jumpSpeed;
+                // print("jump");
+                
+                moveDirection.y = jumpSpeed= jumpSpeedGoal;
                 stableFooting = false;
             }
             else if(DJtimer + .1f < Time.time && jumpRelease == true)//
@@ -122,9 +219,21 @@ public class locomove : MonoBehaviour {
             }
             
         }
-        else//in air
+        else if (stableFooting ==false || controller.isGrounded ==false || IsGrounded(transform) == false)
         {
-           // stableFooting = false;
+            movments.fall(moveDirection);// stableFooting = false;
+        }
+        if (hight > transform.position.y + 1)
+        {
+            hight = transform.position.y;
+            falling = true;
+            movments.fall(new Vector3(0, hight- transform.position.y,0));// stableFooting = false;
+
+        }
+        else if(falling)
+        {
+            falling = false;
+            movments.walk(new Vector3(0, 0, 0));
         }
         if (Time.frameCount % 150 == 0 & !isOn)
         {
@@ -140,10 +249,9 @@ public class locomove : MonoBehaviour {
         }
         else
         {
-            moveDirection.y -= ((gravity/6) * Time.deltaTime);
         }
         controller.Move(moveDirection * Time.deltaTime);
-
+        
     }
 
        

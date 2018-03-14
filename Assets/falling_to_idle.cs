@@ -5,6 +5,7 @@ using UnityEngine;
 public class falling_to_idle : MonoBehaviour {
     Animator anim;
     Vector3 move_old;
+    analock pramGate;
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex) {
     //
@@ -32,28 +33,84 @@ public class falling_to_idle : MonoBehaviour {
     void Start()
     {
         anim = GetComponent<Animator>();
+        pramGate = new analock(this, anim);
+        pramGate.loadToParent();
     }
     void Update()
     {
         Vector3 move = transform.position - move_old;
         move_old = transform.position;
+        
        // anim.SetFloat("down speed", move.y);
-//       anim.SetBool("falling", true);
-//       anim.SetBool("idleing", true);
-//       anim.SetBool("walking", false);
+       //       anim.SetBool("falling", true);
+       //       anim.SetBool("idleing", true);
+       //       anim.SetBool("walking", false);
 
     }
     class analock
     {
         Animator anim;
         bool _falling, _stubble, _idleing, _walking, _sitting = false;
-
-        public analock(Animator anim) {
+        falling_to_idle inputPipe;
+        public analock(falling_to_idle _alt,Animator anim) {
             this.anim = anim;
-            falling = false;
+            inputPipe = _alt;
         }
+        /// <summary>
+        /// because of this function 
+        /// </summary>
+        public void loadToParent()
+        {
+            locomove interfacer =inputPipe.transform.parent.GetComponent<locomove>();
+            interfacer.movments.setwalker(new aniamation(anim));
 
-        public bool falling
+        }
+        public class aniamation : locomove.Actuation.IWalkable
+        {
+            Animator anim;
+            public aniamation(Animator anim)
+            {
+                this.anim = anim;
+
+            }
+            bool _falling, _stubble, _idleing, _walking, _sitting = false;
+
+            public void walk(Vector3 location)
+            {
+                print(location.magnitude);
+                if (location.magnitude > .2f)
+                {
+                    walking = true;
+                    idleing = false;
+                    falling = false;
+                    move(location);
+                }
+                else
+                {
+                    walking = false;
+                    idleing = true;
+                    move(new Vector3(0,0,0));
+                }
+            }
+            public void stumble()
+            {
+                stubble = true;
+            }
+            public void fall(Vector3 displace)
+            {
+                if (displace.y < -.3)
+                {
+                    falling = true;
+                    idleing = false;
+                    walking = false;
+                }
+
+            }
+    
+
+
+
+            public bool falling
         {
             get
             {
@@ -103,22 +160,38 @@ public class falling_to_idle : MonoBehaviour {
             set
             {
                 this.anim.SetBool("walking", value);
+                if (value == true)
+                {
+
+                    this.anim.SetBool("idleing", false);
+                }
                 _walking = value;
             }
         }
-        
-        public bool sitting
-        {
-            get
+
+            public bool sitting
             {
-                return this.anim.GetBool("sitting");
+                get
+                {
+                    return this.anim.GetBool("sitting");
+
+                }
+                set
+                {
+                    this.anim.SetBool("sitting", value);
+                    _sitting = value;
+                }
+            }
+            public void move(Vector3 loco) 
+            {
+
+                this.anim.SetFloat("walkingForward", loco.x);
+                this.anim.SetFloat("walkingLeft", loco.z);
+
+
 
             }
-            set
-            {
-                this.anim.SetBool("sitting", value);
-                _sitting = value;
-            }
+
         }
 
     }
